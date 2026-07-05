@@ -30,15 +30,15 @@ const MEMBERS_LABELS  = ["旅伴編號(系統用)", "姓名", "臨時旅伴"];
 const EXPENSES_HEADERS = [
   // ---- 給人看的欄位 ----
   "date_display", "payer_name", "amount", "currency", "category_display", "note",
-  "participants_display", "split_type_display", "split_display", "created_display",
+  "participants_display", "split_type_display", "split_display", "paid_display", "created_display",
   // ---- App 系統欄位（請勿手動編輯）----
-  "id", "payer", "participants", "split_type", "split_data", "date", "created_at", "category"
+  "id", "payer", "participants", "split_type", "split_data", "date", "created_at", "category", "paid"
 ];
 const EXPENSES_LABELS = [
   "日期", "付款人", "金額", "幣別", "類別", "備註",
-  "分帳對象", "分帳方式", "分帳明細", "建立時間",
+  "分帳對象", "分帳方式", "分帳明細", "還款狀態", "建立時間",
   "編號(系統用)", "付款人ID(系統用)", "分帳對象ID(系統用)", "分帳方式代碼(系統用)",
-  "分帳資料(系統用)", "日期時間戳記(系統用)", "建立時間戳記(系統用)", "類別代碼(系統用)"
+  "分帳資料(系統用)", "日期時間戳記(系統用)", "建立時間戳記(系統用)", "類別代碼(系統用)", "還款狀態(系統用)"
 ];
 
 const SETTLEMENTS_HEADERS = [
@@ -241,8 +241,16 @@ function getExpenses(ss) {
     split_type: r.split_type,
     split_data: safeParseObject(r.split_data),
     created_at: r.created_at,
-    category: r.category || "other"
+    category: r.category || "other",
+    paid: safeParseObject(r.paid)
   }));
+}
+
+function buildPaidDisplay(expense, nameMap) {
+  const paid = expense.paid || {};
+  const parts = (expense.participants || []).filter(id => id !== expense.payer);
+  if (parts.length === 0) return "";
+  return parts.map(id => (nameMap[id] || id) + (paid[id] ? " ✅已還" : " 未還")).join("、");
 }
 
 function buildSplitDisplay(expense, nameMap) {
@@ -300,6 +308,7 @@ function expenseToRow(ss, e) {
     participants.map(id => nameMap[id] || id).join("、"),
     splitTypeLabel(e.split_type),
     buildSplitDisplay(e, nameMap),
+    buildPaidDisplay(e, nameMap),
     formatDateDisplay(e.created_at),
     // ---- 系統欄位 ----
     e.id,
@@ -309,7 +318,8 @@ function expenseToRow(ss, e) {
     JSON.stringify(e.split_data || {}),
     e.date,
     e.created_at,
-    e.category || "other"
+    e.category || "other",
+    JSON.stringify(e.paid || {})
   ];
 }
 

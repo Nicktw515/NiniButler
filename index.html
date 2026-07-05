@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2451E0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="尼尼管家公">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -76,7 +76,7 @@
   /* ---------- Top bar ---------- */
   .topbar{
     display:flex;align-items:center;justify-content:space-between;
-    padding:calc(18px + var(--safe-top)*0.4) 20px 10px;
+    padding:calc(14px + var(--safe-top)) 20px 10px;
     position:sticky;top:0;z-index:6;background:var(--bg);
     flex-shrink:0;
   }
@@ -259,17 +259,26 @@
 
   /* ---------- Ledger ---------- */
   .expense-card{border:1.5px solid var(--line);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;background:#fff;}
-  .expense-head{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;border-left:4px dashed var(--line-strong);}
-  .expense-head .eemoji{font-size:21px;width:36px;text-align:center;}
+  .expense-head{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;}
+  .date-chip{width:46px;height:46px;border-radius:12px;background:var(--surface);border:1.5px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+  .date-chip .dc-month{font-size:9.5px;font-weight:700;color:var(--ink-soft);line-height:1;}
+  .date-chip .dc-day{font-size:17px;font-weight:800;line-height:1.3;font-family:var(--font-mono);}
+  .expense-head .eemoji{font-size:18px;flex-shrink:0;}
   .expense-head .einfo{flex:1;min-width:0;}
   .expense-head .enote{font-weight:700;font-size:15px;}
   .expense-head .emeta{font-size:12px;color:var(--ink-soft);margin-top:2px;}
-  .expense-head .eamount{font-family:var(--font-mono);font-weight:600;font-size:15px;white-space:nowrap;}
+  .expense-head .eamount{font-family:var(--font-mono);font-weight:700;font-size:15px;white-space:nowrap;text-align:right;}
+  .expense-head .ecur{font-size:11px;color:var(--ink-soft);font-weight:600;}
   .expense-body{padding:0 14px 14px 14px;display:none;}
   .expense-body.open{display:block;}
-  .expense-body .split-line{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;color:var(--ink-soft);}
-  .expense-body .split-line span:last-child{font-family:var(--font-mono);color:var(--ink);}
-  .expense-actions{display:flex;gap:8px;margin-top:10px;}
+  .expense-body .payer-line{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;padding:10px 0 6px;}
+  .expense-body .share-row{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;padding:7px 0;color:var(--ink-soft);border-top:1px dashed var(--line);}
+  .expense-body .share-row .sname{color:var(--ink);font-weight:600;}
+  .expense-body .share-row .samt{font-family:var(--font-mono);color:var(--ink);margin-left:auto;margin-right:10px;}
+  .paid-toggle{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .paid-toggle.is-paid{background:var(--green-soft);border-color:var(--green-soft);color:var(--green);}
+  .payer-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--blue-soft);color:var(--blue-ink);}
+  .expense-actions{display:flex;gap:8px;margin-top:12px;}
 
   .empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:44px 24px;color:var(--ink-soft);}
   .empty-state .eemo-mascot{width:104px;height:104px;margin-bottom:8px;animation:floaty 3.2s ease-in-out infinite;}
@@ -334,14 +343,18 @@
     <div class="content">
       <svg class="init-mascot" id="mascot-init"></svg>
       <h1>嗨，我是尼尼！</h1>
-      <div class="tagline">你的旅行記帳管家，跟我說你的名字就能開始</div>
+      <div class="tagline">你的旅行記帳管家，貼上網址讓我認出你是誰</div>
       <div class="stack">
         <div class="field">
           <label>記帳 API 網址（選填）</label>
           <input type="url" id="init-apiurl" placeholder="貼上 Apps Script 網頁應用程式網址">
-          <div class="helper">沒有的話尼尼會先幫你離線記帳，之後再到「設定」補上就好，資料先存在這台裝置裡。設定方法請看下方「怎麼取得網址」。</div>
+          <div class="helper" id="init-apiurl-helper">沒有的話尼尼會先幫你離線記帳，之後再到「設定」補上就好，資料先存在這台裝置裡。設定方法請看下方「怎麼取得網址」。</div>
         </div>
-        <div class="field">
+        <div class="field" id="init-who-field" style="display:none;">
+          <label>你是哪一位旅伴？</label>
+          <select id="init-who-select"></select>
+        </div>
+        <div class="field" id="init-newname-field">
           <label>你的名字</label>
           <input type="text" id="init-nickname" placeholder="例如：Nick">
         </div>
@@ -802,11 +815,25 @@
     return json;
   }
 
+  async function fetchMembersFrom(url){
+    try{
+      const res = await fetch(url, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({ action:"getMembers" }) });
+      if(!res.ok) return null;
+      const json = await res.json();
+      if(json && json.error) return null;
+      return json.members || [];
+    }catch(e){ return null; }
+  }
+
   /* =====================================================
      UTIL
   ===================================================== */
   function fmt(n){ return (Number(n)||0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
   function todayLabel(ts){ const d = new Date(ts); return (d.getMonth()+1) + "/" + d.getDate(); }
+  function dateBlock(ts){
+    const d = new Date(ts);
+    return { month: (d.getMonth()+1)+'月', day: d.getDate() };
+  }
   function showToast(msg, opts){
     opts = opts || {};
     const t = document.getElementById('toast');
@@ -945,9 +972,56 @@
   /* =====================================================
      INIT SCREEN
   ===================================================== */
+  let initKnownMembers = null;
+  async function loadMemberPicker(){
+    const url = document.getElementById('init-apiurl').value.trim();
+    const whoField = document.getElementById('init-who-field');
+    const nameField = document.getElementById('init-newname-field');
+    const select = document.getElementById('init-who-select');
+    const helper = document.getElementById('init-apiurl-helper');
+    if(!url){
+      whoField.style.display = 'none'; nameField.style.display = 'block'; initKnownMembers = null;
+      helper.textContent = '沒有的話尼尼會先幫你離線記帳，之後再到「設定」補上就好，資料先存在這台裝置裡。設定方法請看下方「怎麼取得網址」。';
+      return;
+    }
+    helper.textContent = '尼尼正在查這本帳裡有哪些旅伴…';
+    const members = await fetchMembersFrom(url);
+    initKnownMembers = members;
+    if(members === null){
+      helper.textContent = '抓不到旅伴名單，可能是網址還沒部署好；還是可以直接輸入名字先離線記帳，之後再到設定重新連接。';
+      whoField.style.display = 'none'; nameField.style.display = 'block';
+      return;
+    }
+    helper.textContent = members.length ? '找到這本帳的旅伴名單了，選一下你是誰吧！' : '這本帳目前還沒有旅伴，你會是第一位！';
+    select.innerHTML = '<option value="">請選擇...</option>' +
+      members.map(m=>'<option value="'+m.id+'">'+escapeHtml(m.name)+'</option>').join('') +
+      '<option value="__new__">➕ 我是新旅伴</option>';
+    whoField.style.display = 'block';
+    nameField.style.display = 'none';
+    select.onchange = ()=>{
+      const isNew = select.value === '__new__';
+      nameField.style.display = isNew ? 'block' : 'none';
+      if(isNew){ document.getElementById('init-nickname').value=''; document.getElementById('init-nickname').focus(); }
+    };
+  }
+  document.getElementById('init-apiurl').addEventListener('blur', loadMemberPicker);
+
   document.getElementById('init-start').addEventListener('click', async ()=>{
     const apiUrl = document.getElementById('init-apiurl').value.trim();
-    const nickname = document.getElementById('init-nickname').value.trim();
+    const whoField = document.getElementById('init-who-field');
+    const select = document.getElementById('init-who-select');
+    const usingPicker = whoField.style.display !== 'none' && initKnownMembers !== null;
+
+    let nickname = document.getElementById('init-nickname').value.trim();
+    let pickedExisting = null;
+
+    if(usingPicker){
+      if(!select.value){ showToast('選一下你是哪一位旅伴，或選「➕ 我是新旅伴」'); return; }
+      if(select.value !== '__new__'){
+        pickedExisting = initKnownMembers.find(m=>m.id === select.value);
+        nickname = pickedExisting ? pickedExisting.name : nickname;
+      }
+    }
     if(!nickname){ showToast('尼尼需要知道你的名字才能開始記帳'); return; }
     if(!apiUrl){
       const ok = await confirmModal('先離線記帳嗎？', '你還沒貼記帳 API 網址，這樣記的帳只會存在「這台裝置」上，不會同步到 Google Sheet，也不會跟旅伴同步。之後隨時可以到「設定」補上網址開始同步。');
@@ -955,7 +1029,21 @@
     }
     config = { apiUrl: apiUrl || null, nickname: nickname, selfId: null };
     saveConfig();
-    const me = await Store.addMember(nickname, false);
+
+    let me = pickedExisting;
+    if(!me && apiUrl && !usingPicker){
+      // 保險機制：萬一名單抓取失敗、使用者用手動輸入的名字剛好跟既有旅伴同名
+      let matchedMember = null;
+      try{
+        const res = await apiCall('getMembers', {});
+        if(res && res.members) matchedMember = res.members.find(m => (m.name||'').trim().toLowerCase() === nickname.toLowerCase());
+      }catch(e){ /* 抓不到既有名單就當新的人處理 */ }
+      if(matchedMember){
+        const isSamePerson = await confirmModal('找到同名的旅伴', '這本帳裡已經有一位叫「'+matchedMember.name+'」的旅伴了。如果這是你自己之前（或在別台裝置）記過的帳，選「確定」會沿用同一個身分；如果只是剛好同名的另一個人，請選「取消」，尼尼會幫你建立新的身分。');
+        if(isSamePerson) me = matchedMember;
+      }
+    }
+    if(!me){ me = await Store.addMember(nickname, false); }
     config.selfId = me.id;
     saveConfig();
     showToast('尼尼已經準備好了，開始記帳吧！');
@@ -1316,6 +1404,7 @@
       participants: w.participants.slice(),
       split_type: w.split_type,
       split_data: split_data,
+      paid: w.editingId ? ((data.expenses.find(e=>e.id===w.editingId)||{}).paid || {}) : {},
       created_at: w.editingId ? (data.expenses.find(e=>e.id===w.editingId)||{}).created_at || Date.now() : Date.now()
     };
     config.lastCurrency = w.currency; saveConfig();
@@ -1350,6 +1439,22 @@
         if(ok) deleteExpenseWithUndo(btn.dataset.id);
       });
     });
+    box.querySelectorAll('.js-toggle-paid').forEach(btn=>{
+      btn.addEventListener('click', (ev)=>{ ev.stopPropagation(); toggleSharePaid(btn.dataset.expenseId, btn.dataset.memberId); });
+    });
+  }
+
+  async function toggleSharePaid(expenseId, memberId){
+    const e = data.expenses.find(x=>x.id===expenseId);
+    if(!e) return;
+    if(!e.paid) e.paid = {};
+    const willBePaid = !e.paid[memberId];
+    if(willBePaid) e.paid[memberId] = true; else delete e.paid[memberId];
+    saveLocalData();
+    await Store.updateExpense(e);
+    showToast(willBePaid ? (memberName(memberId)+' 這筆標記已還款了 ✅') : '已取消標記');
+    renderLedger();
+    if(uiState.currentView === 'dashboard') renderDashboard();
   }
 
   function deleteExpenseWithUndo(id){
@@ -1383,16 +1488,25 @@
   function expenseCardHTML(e){
     const open = uiState.expandedExpenseId === e.id;
     const shares = computeShares(e);
+    const d = dateBlock(e.created_at);
+    const paid = e.paid || {};
     return '<div class="expense-card">'+
       '<div class="expense-head" data-id="'+e.id+'">'+
-        '<div class="eemoji">'+expenseEmoji(e)+'</div>'+
-        '<div class="einfo"><div class="enote">'+escapeHtml(e.note||'未命名支出')+'</div>'+
-        '<div class="emeta">'+escapeHtml(memberName(e.payer))+' 付款・'+todayLabel(e.created_at)+'</div></div>'+
-        '<div class="eamount mono">'+fmt(e.amount)+' '+e.currency+'</div>'+
+        '<div class="date-chip"><div class="dc-month">'+d.month+'</div><div class="dc-day">'+d.day+'</div></div>'+
+        '<div class="einfo"><div class="enote">'+expenseEmoji(e)+' '+escapeHtml(e.note||categoryOf(e.category).label)+'</div>'+
+        '<div class="emeta">'+escapeHtml(memberName(e.payer))+' 付款</div></div>'+
+        '<div style="text-align:right;"><div class="eamount mono">'+fmt(e.amount)+'</div><div class="ecur">'+e.currency+'</div></div>'+
       '</div>'+
       '<div class="expense-body '+(open?'open':'')+'">'+
-        '<div class="dashed"></div>'+
-        Object.keys(shares).map(id=>'<div class="split-line"><span>'+escapeHtml(memberName(id))+'</span><span>'+fmt(shares[id])+'</span></div>').join('')+
+        '<div class="payer-line">💰 '+escapeHtml(memberName(e.payer))+' <span class="payer-badge">付款人</span></div>'+
+        Object.keys(shares).map(id=>{
+          if(id === e.payer){
+            return '<div class="share-row"><span class="sname">'+escapeHtml(memberName(id))+'（自己的份）</span><span class="samt">'+fmt(shares[id])+'</span></div>';
+          }
+          const isPaid = !!paid[id];
+          return '<div class="share-row"><span class="sname">'+escapeHtml(memberName(id))+'</span><span class="samt">'+fmt(shares[id])+'</span>'+
+            '<button class="paid-toggle js-toggle-paid '+(isPaid?'is-paid':'')+'" data-expense-id="'+e.id+'" data-member-id="'+id+'">'+(isPaid?'✓ 已還款':'標記已還')+'</button></div>';
+        }).join('')+
         '<div class="expense-actions">'+
           '<button class="btn btn-ghost btn-sm js-edit" data-id="'+e.id+'">編輯</button>'+
           '<button class="btn btn-danger-ghost btn-sm js-delete" data-id="'+e.id+'">刪除</button>'+
@@ -1425,8 +1539,14 @@
       const cur = e.currency || 'TWD';
       if(!result[cur]) result[cur] = {};
       const shares = computeShares(e);
-      result[cur][e.payer] = (result[cur][e.payer]||0) + (Number(e.amount)||0);
-      Object.keys(shares).forEach(id=>{ result[cur][id] = (result[cur][id]||0) - shares[id]; });
+      const paid = e.paid || {};
+      let payerCredit = Number(e.amount) || 0;
+      Object.keys(shares).forEach(id=>{
+        if(id === e.payer){ payerCredit -= shares[id]; return; } // 付款人自己的份，直接扣掉，不算應收
+        if(paid[id]){ payerCredit -= shares[id]; return; } // 已經當面還清，雙方都不用再算這筆
+        result[cur][id] = (result[cur][id]||0) - shares[id];
+      });
+      result[cur][e.payer] = (result[cur][e.payer]||0) + payerCredit;
     });
     (data.settlements || []).forEach(s=>{
       const cur = s.currency || 'TWD';
@@ -1729,9 +1849,10 @@
       field.value = invited;
       const wrap = field.closest('.field');
       if(wrap) wrap.style.display = 'none';
+      loadMemberPicker();
     }
     const tagline = document.querySelector('#view-init .tagline');
-    if(tagline) tagline.textContent = '旅伴邀請你一起記帳，輸入你的名字就能加入這本帳！';
+    if(tagline) tagline.textContent = '旅伴邀請你一起記帳，選一下你是誰就能加入這本帳！';
   }
   async function boot(){
     hydrateIcons();
