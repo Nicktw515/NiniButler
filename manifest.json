@@ -1,0 +1,14 @@
+{
+  "name": "尼尼管家公",
+  "short_name": "尼尼管家公",
+  "description": "旅行記帳分帳工具 — 貼上連結，馬上開始跟旅伴分帳",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F5F7FB",
+  "theme_color": "#2451E0",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

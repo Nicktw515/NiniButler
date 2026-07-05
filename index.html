@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>尼尼管家公｜旅行記帳分帳</title>
+<meta name="theme-color" content="#2451E0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="尼尼管家公">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --surface:#F5F7FB;
+    --surface-2:#EAEDF5;
+    --ink:#181B22;
+    --ink-soft:#6B7280;
+    --ink-faint:#9CA3AF;
+    --line:#E6E9F0;
+    --line-strong:#D6DAE4;
+    --blue:#2E5CF0;
+    --blue-ink:#1B3DAE;
+    --blue-soft:#EAF0FE;
+    --blue-deep:#17348C;
+    --green:#12A150;
+    --green-soft:#E6F9EE;
+    --red:#EF5B45;
+    --red-soft:#FDECE9;
+    --yellow-soft:#FFF4D6;
+    --radius-xl:28px;
+    --radius-lg:22px;
+    --radius-md:16px;
+    --radius-sm:11px;
+    --font-display:'Baloo 2', system-ui, sans-serif;
+    --font-body:'Inter', system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, monospace;
+    --safe-bottom:env(safe-area-inset-bottom, 0px);
+    --safe-top:env(safe-area-inset-top, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;overscroll-behavior-y:none;}
+  body{
+    margin:0;
+    background:var(--surface);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    touch-action:manipulation;
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    height:100vh;
+    height:100dvh;
+    background:var(--bg);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 60px rgba(20,22,26,0.06);
+    overflow:hidden;
+  }
+  .view{display:none;flex:1;flex-direction:column;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(96px + var(--safe-bottom));}
+  .view.active{display:flex;}
+  .view.no-nav{padding-bottom:24px;}
+
+  @keyframes popIn{ 0%{transform:scale(0.85);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+  @keyframes floaty{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+  @keyframes wiggle{ 0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(3deg);} }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:calc(18px + var(--safe-top)*0.4) 20px 10px;
+    position:sticky;top:0;z-index:6;background:var(--bg);
+    flex-shrink:0;
+  }
+  .topbar h1{font-family:var(--font-display);font-size:21px;font-weight:700;margin:0;letter-spacing:0;}
+  .topbar .sub{font-size:12px;color:var(--ink-soft);margin-top:2px;display:flex;align-items:center;}
+  .logo-mascot{width:38px;height:38px;flex-shrink:0;filter:drop-shadow(0 3px 6px rgba(46,92,240,0.25));}
+  .icon-btn{
+    width:40px;height:40px;border-radius:14px;
+    background:var(--surface);border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);cursor:pointer;transition:transform .12s ease, background .12s ease;
+  }
+  .icon-btn:active{transform:scale(0.92);background:var(--surface-2);}
+  .icon-btn svg{width:19px;height:19px;}
+  .icon-btn.spinning svg{animation:spin 0.9s linear infinite;}
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---------- Generic layout ---------- */
+  .content{padding:0 20px;flex:1;}
+  .stack{display:flex;flex-direction:column;gap:12px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:13px;font-weight:700;color:var(--ink-soft);}
+  input[type=text],input[type=url],select,textarea{
+    font-family:var(--font-body);font-size:16px;
+    padding:14px 15px;border-radius:var(--radius-md);
+    border:2px solid var(--line);background:var(--surface);color:var(--ink);outline:none;width:100%;
+    transition:border-color .12s ease;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--blue);background:#fff;}
+  .btn{
+    font-family:var(--font-body);font-weight:700;font-size:15px;
+    padding:15px 18px;border-radius:var(--radius-md);border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    transition:transform .1s ease, filter .1s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--ink);color:#fff;}
+  .btn-blue{background:var(--blue);color:#fff;box-shadow:0 8px 18px -8px rgba(46,92,240,0.65);}
+  .btn-ghost{background:var(--surface);color:var(--ink);border:2px solid var(--line);}
+  .btn-danger-ghost{background:var(--red-soft);color:var(--red);}
+  .btn-sm{padding:9px 14px;font-size:13px;width:auto;border-radius:var(--radius-sm);}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .link-btn{background:none;border:none;color:var(--blue);font-weight:700;font-size:14px;cursor:pointer;padding:8px;}
+
+  .card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-lg);padding:16px;}
+  .divider{height:1.5px;background:var(--line);margin:4px 0;}
+  .dashed{border-top:2px dashed var(--line-strong);margin:2px 0;}
+  .helper{font-size:12.5px;color:var(--ink-faint);line-height:1.5;}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:99px;}
+  .badge-blue{background:var(--blue-soft);color:var(--blue-ink);}
+  .badge-green{background:var(--green-soft);color:var(--green);}
+  .badge-red{background:var(--red-soft);color:var(--red);}
+  .badge-grey{background:var(--surface-2);color:var(--ink-soft);}
+  .mono{font-family:var(--font-mono);}
+
+  /* ---------- Init screen ---------- */
+  #view-init .content{padding-top:9vh;display:flex;flex-direction:column;align-items:center;}
+  .init-mascot{width:132px;height:132px;margin-bottom:6px;animation:floaty 3.2s ease-in-out infinite;}
+  #view-init h1{font-family:var(--font-display);font-size:27px;font-weight:800;margin:6px 0 4px;text-align:center;}
+  #view-init .tagline{color:var(--ink-soft);font-size:14px;margin-bottom:28px;text-align:center;}
+  #view-init .stack{width:100%;}
+
+  /* ---------- Dashboard ---------- */
+  .hero-total{
+    background:linear-gradient(155deg, var(--blue) 0%, var(--blue-deep) 100%);
+    color:#fff;border-radius:var(--radius-xl);padding:22px 20px;margin-bottom:16px;
+    position:relative;overflow:hidden;
+  }
+  .hero-total .paw-deco{position:absolute;right:-10px;bottom:-14px;width:92px;height:92px;opacity:0.16;}
+  .hero-total .label{font-size:12.5px;color:rgba(255,255,255,0.72);font-weight:700;}
+  .hero-total .amount{font-family:var(--font-mono);font-size:32px;font-weight:600;margin-top:6px;letter-spacing:-0.02em;}
+  .hero-total .row{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1;}
+  .hero-total .meta{font-size:12.5px;color:rgba(255,255,255,0.68);}
+  .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+  .quick-card{
+    background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-lg);padding:15px;
+    display:flex;flex-direction:column;gap:9px;cursor:pointer;transition:transform .1s ease, background .1s ease;
+  }
+  .quick-card:active{transform:scale(0.96);background:var(--surface-2);}
+  .quick-card .qicon{width:26px;height:26px;color:var(--blue);}
+  .quick-card .qlabel{font-size:13.5px;font-weight:700;}
+  .section-title{font-size:13px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.04em;margin:4px 0 10px;}
+  .recent-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1.5px solid var(--line);}
+  .recent-item:last-child{border-bottom:none;}
+  .recent-item .remoji{width:40px;height:40px;border-radius:13px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+  .recent-item .rinfo{flex:1;min-width:0;}
+  .recent-item .rnote{font-size:14.5px;font-weight:700;}
+  .recent-item .rmeta{font-size:12px;color:var(--ink-soft);margin-top:1px;}
+  .recent-item .ramount{font-family:var(--font-mono);font-weight:600;font-size:14.5px;white-space:nowrap;}
+
+  /* ---------- Bottom nav ---------- */
+  .bottomnav{
+    position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;
+    background:rgba(255,255,255,0.94);backdrop-filter:blur(14px);
+    border-top:1.5px solid var(--line);display:flex;padding-bottom:var(--safe-bottom);z-index:20;
+    border-radius:24px 24px 0 0;
+  }
+  .navbtn{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:11px 4px 9px;background:none;border:none;color:var(--ink-faint);
+    font-family:var(--font-body);font-size:10.5px;font-weight:700;cursor:pointer;
+  }
+  .navbtn svg{width:21px;height:21px;transition:transform .15s ease;}
+  .navbtn.active{color:var(--blue);}
+  .navbtn.active svg{transform:translateY(-1px) scale(1.08);}
+  .fab{
+    position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+    width:54px;height:54px;border-radius:50%;
+    background:linear-gradient(155deg, var(--blue), var(--blue-deep));color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 20px -6px rgba(46,92,240,0.65);border:4px solid #fff;
+  }
+  .fab svg{width:24px;height:24px;}
+  .navbtn.fabwrap{position:relative;}
+
+  /* ---------- Wizard ---------- */
+  .wizard-progress{display:flex;gap:5px;padding:0 20px 14px;}
+  .wizard-progress .dot{height:5px;flex:1;border-radius:99px;background:var(--surface-2);transition:background .2s ease;}
+  .wizard-progress .dot.done{background:var(--blue);}
+  .step-title{font-family:var(--font-display);font-size:20px;font-weight:700;margin:6px 0 4px;}
+  .step-sub{font-size:13px;color:var(--ink-soft);margin-bottom:18px;}
+  .radio-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid var(--line);border-radius:var(--radius-md);cursor:pointer;transition:all .12s ease;}
+  .radio-row.selected{border-color:var(--blue);background:var(--blue-soft);}
+  .radio-row .ravatar{width:32px;height:32px;border-radius:50%;background:var(--blue-soft);color:var(--blue-ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;}
+  .radio-row .rdot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line-strong);flex-shrink:0;position:relative;}
+  .radio-row.selected .rdot{border-color:var(--blue);}
+  .radio-row.selected .rdot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--blue);}
+  .radio-row .rname{font-weight:700;font-size:15px;flex:1;}
+
+  .amount-input-wrap{display:flex;gap:10px;}
+  .amount-input-wrap select{max-width:100px;flex-shrink:0;}
+  .amount-display{
+    font-family:var(--font-mono);font-size:26px;font-weight:600;
+    padding:14px 16px;border-radius:var(--radius-md);border:2px solid var(--line);background:var(--surface);
+    flex:1;text-align:right;cursor:pointer;transition:border-color .12s ease;
+  }
+  .amount-display.focused{border-color:var(--blue);background:#fff;}
+  .amount-display.placeholder{color:var(--ink-faint);}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .chip{padding:9px 14px;border-radius:99px;background:var(--surface);border:2px solid var(--line);font-size:13px;font-weight:700;cursor:pointer;transition:all .1s ease;}
+  .chip.selected{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .chip:active{transform:scale(0.95);background:var(--surface-2);}
+  .checkrow{display:flex;align-items:center;gap:12px;padding:13px 16px;border:2px solid var(--line);border-radius:var(--radius-md);cursor:pointer;transition:all .12s ease;}
+  .checkrow.selected{border-color:var(--blue);background:var(--blue-soft);}
+  .checkrow .ravatar{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--blue-ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12.5px;flex-shrink:0;border:1.5px solid var(--line);}
+  .checkrow.selected .ravatar{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .checkrow .cbox{width:20px;height:20px;border-radius:7px;border:2px solid var(--line-strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;}
+  .checkrow.selected .cbox{background:var(--blue);border-color:var(--blue);}
+  .checkrow .cname{font-weight:700;font-size:15px;flex:1;}
+  .split-detail-row{display:flex;align-items:center;gap:10px;padding:9px 0;}
+  .split-detail-row .sname{flex:1;font-size:14.5px;font-weight:700;}
+  .split-detail-row .svalbtn{
+    width:112px;text-align:right;font-family:var(--font-mono);font-weight:600;
+    padding:10px 12px;border:2px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;
+  }
+  .split-detail-row .svalbtn.focused{border-color:var(--blue);background:#fff;}
+  .split-sum-note{font-size:13px;margin-top:10px;padding:11px 13px;border-radius:var(--radius-sm);font-weight:600;}
+  .split-sum-note.ok{background:var(--green-soft);color:var(--green);}
+  .split-sum-note.err{background:var(--red-soft);color:var(--red);}
+  .split-sum-note.info{background:var(--blue-soft);color:var(--blue-ink);}
+
+  .wizard-footer{padding:14px 20px calc(20px + var(--safe-bottom));display:flex;gap:10px;border-top:1.5px solid var(--line);position:sticky;bottom:0;background:#fff;}
+  .wizard-footer .btn-ghost{flex:0 0 84px;}
+
+  /* ---------- Numpad ---------- */
+  .numpad-overlay{position:fixed;inset:0;background:rgba(20,22,26,0.35);display:none;align-items:flex-end;justify-content:center;z-index:60;}
+  .numpad-overlay.active{display:flex;}
+  .numpad-sheet{background:#fff;border-radius:26px 26px 0 0;padding:16px 16px calc(14px + var(--safe-bottom));width:100%;max-width:480px;animation:popIn .18s ease;}
+  .numpad-display{font-family:var(--font-mono);font-size:30px;font-weight:600;text-align:center;padding:10px 0 18px;color:var(--ink);}
+  .numpad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .numkey{
+    background:var(--surface);border:none;border-radius:16px;padding:17px 0;font-size:21px;font-weight:700;
+    font-family:var(--font-body);color:var(--ink);cursor:pointer;transition:transform .08s ease, background .08s ease;
+  }
+  .numkey:active{transform:scale(0.93);background:var(--surface-2);}
+  .numkey.wide{grid-column:span 1;}
+  .numkey.accent{background:var(--blue);color:#fff;}
+  .numkey.accent:active{background:var(--blue-ink);}
+
+  /* ---------- Ledger ---------- */
+  .expense-card{border:1.5px solid var(--line);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;background:#fff;}
+  .expense-head{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;border-left:4px dashed var(--line-strong);}
+  .expense-head .eemoji{font-size:21px;width:36px;text-align:center;}
+  .expense-head .einfo{flex:1;min-width:0;}
+  .expense-head .enote{font-weight:700;font-size:15px;}
+  .expense-head .emeta{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .expense-head .eamount{font-family:var(--font-mono);font-weight:600;font-size:15px;white-space:nowrap;}
+  .expense-body{padding:0 14px 14px 14px;display:none;}
+  .expense-body.open{display:block;}
+  .expense-body .split-line{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;color:var(--ink-soft);}
+  .expense-body .split-line span:last-child{font-family:var(--font-mono);color:var(--ink);}
+  .expense-actions{display:flex;gap:8px;margin-top:10px;}
+
+  .empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:44px 24px;color:var(--ink-soft);}
+  .empty-state .eemo-mascot{width:104px;height:104px;margin-bottom:8px;animation:floaty 3.2s ease-in-out infinite;}
+  .empty-state .etitle{font-weight:700;color:var(--ink);margin-bottom:4px;font-size:15px;}
+
+  /* ---------- Settlement ---------- */
+  .balance-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1.5px solid var(--line);}
+  .balance-row:last-child{border-bottom:none;}
+  .balance-row .bavatar{width:30px;height:30px;border-radius:50%;background:var(--blue-soft);color:var(--blue-ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12.5px;flex-shrink:0;}
+  .balance-row .bname{flex:1;font-weight:700;font-size:15px;}
+  .balance-row .bamt{font-family:var(--font-mono);font-weight:600;font-size:15px;}
+  .txn-row{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--surface);border-radius:var(--radius-md);margin-bottom:8px;}
+  .txn-row .tfrom{font-weight:700;}
+  .txn-row .arrow{color:var(--ink-faint);}
+  .txn-row .tto{font-weight:700;}
+  .txn-row .tamt{margin-left:auto;font-family:var(--font-mono);font-weight:700;color:var(--blue-ink);}
+  .currency-block{margin-bottom:22px;}
+  .donut{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .donut-hole{width:52px;height:52px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--ink-soft);}
+  .cat-legend-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:4px 0;}
+  .cat-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .currency-tag{display:inline-block;font-family:var(--font-mono);font-size:12px;font-weight:700;background:var(--surface-2);padding:4px 11px;border-radius:8px;margin-bottom:10px;}
+  #line-output, .text-output-box{white-space:pre-wrap;font-family:var(--font-mono);font-size:13px;line-height:1.7;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-md);padding:16px;margin-top:14px;}
+  .celebrate{text-align:center;padding:8px 0 4px;font-size:13px;color:var(--green);font-weight:700;}
+
+  /* ---------- Members ---------- */
+  .member-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1.5px solid var(--line);}
+  .member-row:last-child{border-bottom:none;}
+  .member-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;color:#fff;}
+  .member-row .mname{flex:1;font-weight:700;font-size:15px;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,22,26,0.45);display:none;align-items:flex-end;justify-content:center;z-index:50;}
+  .modal-overlay.active{display:flex;}
+  .modal-sheet{background:#fff;border-radius:26px 26px 0 0;padding:22px 20px calc(22px + var(--safe-bottom));width:100%;max-width:480px;animation:popIn .18s ease;}
+  .modal-sheet h3{font-family:var(--font-display);margin:0 0 6px;font-size:18px;}
+  .modal-sheet p{font-size:14px;color:var(--ink-soft);margin:0 0 18px;line-height:1.5;}
+  .modal-actions{display:flex;gap:10px;}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:calc(100px + var(--safe-bottom));transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;padding:12px 16px 12px 18px;border-radius:99px;
+    box-shadow:0 10px 24px -6px rgba(0,0,0,0.35);opacity:0;pointer-events:none;transition:all .25s ease;
+    max-width:90%;text-align:center;z-index:100;display:flex;align-items:center;gap:10px;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+  .toast .undo-btn{background:rgba(255,255,255,0.16);border:none;color:#fff;font-weight:700;font-size:12.5px;padding:6px 12px;border-radius:99px;cursor:pointer;flex-shrink:0;}
+
+  .sync-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;}
+  .sync-dot.on{background:var(--green);}
+  .sync-dot.off{background:var(--ink-faint);}
+
+  ::selection{background:var(--blue-soft);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ INIT ============ -->
+  <section class="view" id="view-init">
+    <div class="content">
+      <svg class="init-mascot" id="mascot-init"></svg>
+      <h1>嗨，我是尼尼！</h1>
+      <div class="tagline">你的旅行記帳管家，跟我說你的名字就能開始</div>
+      <div class="stack">
+        <div class="field">
+          <label>記帳 API 網址（選填）</label>
+          <input type="url" id="init-apiurl" placeholder="貼上 Apps Script 網頁應用程式網址">
+          <div class="helper">沒有的話尼尼會先幫你離線記帳，之後再到「設定」補上就好，資料先存在這台裝置裡。設定方法請看下方「怎麼取得網址」。</div>
+        </div>
+        <div class="field">
+          <label>你的名字</label>
+          <input type="text" id="init-nickname" placeholder="例如：Nick">
+        </div>
+        <button class="btn btn-primary" id="init-start" style="margin-top:6px;">讓尼尼開始幫我記帳</button>
+        <button class="link-btn" id="init-howto">怎麼取得記帳網址？</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section class="view" id="view-dashboard">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg class="logo-mascot" id="mascot-header"></svg>
+        <div>
+          <h1 id="dash-title">尼尼管家公</h1>
+          <div class="sub"><span class="sync-dot off" id="sync-dot"></span><span id="sync-label">離線模式</span></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="icon-btn" id="dash-sync-btn" data-icon="refresh" title="立即同步"></div>
+        <div class="icon-btn" id="dash-settings" data-icon="settings"></div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="hero-total">
+        <svg class="paw-deco" viewBox="0 0 100 100" fill="#fff"><circle cx="30" cy="35" r="12"/><circle cx="55" cy="25" r="10"/><circle cx="75" cy="40" r="9"/><ellipse cx="50" cy="62" rx="22" ry="18"/></svg>
+        <div class="row">
+          <div>
+            <div class="label">目前你的淨結餘</div>
+            <div class="amount" id="hero-amount">0</div>
+          </div>
+          <div class="meta" id="hero-meta">共 0 筆支出</div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <div class="quick-card" data-nav="wizard">
+          <svg class="qicon" data-icon="plusCircle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+          <div class="qlabel">新增支出</div>
+        </div>
+        <div class="quick-card" data-nav="settlement">
+          <svg class="qicon" data-icon="scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+          <div class="qlabel">查看結算</div>
+        </div>
+      </div>
+      <div class="section-title">尼尼記的最近帳目</div>
+      <div id="dash-recent"></div>
+    </div>
+  </section>
+
+  <!-- ============ WIZARD ============ -->
+  <section class="view no-nav" id="view-wizard">
+    <div class="topbar">
+      <div class="icon-btn" id="wiz-close" data-icon="close"></div>
+      <h1 id="wiz-title" style="font-size:15px;">新增支出</h1>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="wizard-progress" id="wiz-progress"></div>
+    <div class="content" id="wiz-content" style="flex:1;overflow-y:auto;"></div>
+    <div class="wizard-footer">
+      <button class="btn btn-ghost" id="wiz-back">上一步</button>
+      <button class="btn btn-blue" id="wiz-next">下一步</button>
+    </div>
+  </section>
+
+  <!-- ============ LEDGER ============ -->
+  <section class="view" id="view-ledger">
+    <div class="topbar">
+      <div><h1>帳本</h1><div class="sub" id="ledger-sub">共 0 筆</div></div>
+      <div class="icon-btn" data-nav="wizard" data-icon="plus"></div>
+    </div>
+    <div class="content" id="ledger-list"></div>
+  </section>
+
+  <!-- ============ SETTLEMENT ============ -->
+  <section class="view" id="view-settlement">
+    <div class="topbar">
+      <div><h1>結算</h1><div class="sub">尼尼幫大家算好了</div></div>
+      <div class="icon-btn" id="settle-refresh" data-icon="refresh"></div>
+    </div>
+    <div class="content" id="settlement-content"></div>
+  </section>
+
+  <!-- ============ MEMBERS ============ -->
+  <section class="view" id="view-members">
+    <div class="topbar">
+      <div><h1>旅伴</h1><div class="sub" id="members-sub">共 0 人</div></div>
+      <div class="icon-btn" id="member-add-btn" data-icon="plus"></div>
+    </div>
+    <div class="content" id="members-list"></div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="view no-nav" id="view-settings">
+    <div class="topbar">
+      <div class="icon-btn" id="settings-back" data-icon="back"></div>
+      <h1 style="font-size:15px;">設定</h1>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="content">
+      <div class="stack">
+        <div class="field">
+          <label>你的名字</label>
+          <input type="text" id="set-nickname">
+          <div class="helper">尼尼會用這個名字記住帳本裡的你</div>
+        </div>
+        <div class="field">
+          <label>記帳 API 網址</label>
+          <input type="url" id="set-apiurl" placeholder="貼上 Apps Script 網頁應用程式網址">
+          <div class="helper">留空就是離線模式，資料只存這台裝置；貼上網址後尼尼就會把帳同步到 Google Sheet 給大家看。</div>
+        </div>
+        <button class="btn btn-primary" id="set-save">儲存設定</button>
+
+        <div class="divider"></div>
+
+        <div class="field">
+          <label>邀請旅伴一起記帳</label>
+          <div class="helper">設定好 API 網址後按下面按鈕，尼尼幫你生成一段邀請文字，貼到群組讓大家一鍵加入同一本帳</div>
+          <button class="btn btn-ghost" id="gen-invite-btn">✉️ 生成邀請文字</button>
+          <div id="invite-output" class="text-output-box" style="display:none;"></div>
+          <button class="btn btn-ghost" id="copy-invite-btn" style="display:none;margin-top:10px;">複製邀請文字</button>
+        </div>
+
+        <div class="divider"></div>
+        <button class="btn btn-danger-ghost" id="set-reset">清除所有資料，重新開始</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <div class="bottomnav" id="bottomnav">
+    <button class="navbtn" data-nav="dashboard"><svg data-icon="home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg>首頁</button>
+    <button class="navbtn" data-nav="ledger"><svg data-icon="book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg>帳本</button>
+    <button class="navbtn fabwrap" data-nav="wizard"><span class="fab"><svg data-icon="plus" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></svg></span></button>
+    <button class="navbtn" data-nav="settlement"><svg data-icon="scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg>結算</button>
+    <button class="navbtn" data-nav="members"><svg data-icon="users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg>旅伴</button>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-sheet">
+    <h3 id="modal-title">確定嗎？</h3>
+    <p id="modal-body"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel">取消</button>
+      <button class="btn btn-danger-ghost" id="modal-confirm">確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Numpad -->
+<div class="numpad-overlay" id="numpad-overlay">
+  <div class="numpad-sheet">
+    <div class="numpad-display" id="numpad-display">0</div>
+    <div class="numpad-grid" id="numpad-grid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =====================================================
+     ICONS (inline, consistent rounded line style)
+  ===================================================== */
+  const ICON = {
+    home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/>',
+    book: '<path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5C20 4.7 19.3 4 18.5 4H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5z"/>',
+    scale: '<path d="M12 3v18"/><path d="M7 21h10"/><path d="M5 7l-3 6a3.2 3.2 0 0 0 6 0z"/><path d="M19 7l3 6a3.2 3.2 0 0 1-6 0z"/><path d="M3 7h6M15 7h6"/><path d="M12 3l-3 4h6z"/>',
+    users: '<circle cx="9" cy="8" r="3.2"/><path d="M2.8 19c0-3 2.8-5.2 6.2-5.2s6.2 2.2 6.2 5.2"/><path d="M16.2 5.4a3.2 3.2 0 0 1 0 6.2"/><path d="M17 13.9c2.6.5 4.2 2.4 4.2 5.1"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    plusCircle: '<circle cx="12" cy="12" r="9.5"/><path d="M12 8v8M8 12h8"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>',
+    back: '<path d="M15 5 8 12l7 7"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.7 7.7 0 0 0 .1-2l2-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-1.7-1L15 3h-4l-.5 2.4a7.6 7.6 0 0 0-1.7 1l-2.3-.9-2 3.4L6.5 11a7.7 7.7 0 0 0 0 2l-2 1.5 2 3.4 2.3-.9c.5.4 1.1.8 1.7 1L10.5 21h4l.4-2.4c.6-.2 1.2-.6 1.7-1l2.3.9 2-3.4z"/>',
+    refresh: '<path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M5 9a7.5 7.5 0 0 1 13-3.5L20 8"/><path d="M19 15a7.5 7.5 0 0 1-13 3.5L4 16"/>',
+    backspace: '<path d="M9 6h11a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-6-6z"/><path d="M13 10l4 4M17 10l-4 4"/>'
+  };
+
+  /* =====================================================
+     MASCOT SVG (chubby husky) — reused for header/init/empty states
+     Split into a shared BASE (body/ears/collar/nose — same design
+     everywhere) plus swappable FACE + DECO fragments per mood, so
+     every mood is unmistakably the same dog.
+  ===================================================== */
+  const HUSKY_BASE = `
+    <defs>
+      <radialGradient id="cheekBlush" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#FFB4A6" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#FFB4A6" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="120" cy="222" rx="58" ry="9" fill="#14161A" opacity="0.08"/>
+    <path d="M186 168 C 214 158, 222 130, 206 108 C 224 122, 226 156, 200 178 C 195 182, 188 178, 186 168 Z" fill="#26262B"/>
+    <path d="M196 122 C 206 132, 208 150, 196 164" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.85"/>
+    <ellipse cx="78" cy="214" rx="17" ry="12" fill="#FFFFFF" stroke="#D6DAE4" stroke-width="2"/>
+    <ellipse cx="164" cy="214" rx="17" ry="12" fill="#FFFFFF" stroke="#D6DAE4" stroke-width="2"/>
+    <ellipse cx="120" cy="192" rx="66" ry="46" fill="#26262B"/>
+    <ellipse cx="120" cy="196" rx="66" ry="34" fill="#1B1B1F"/>
+    <ellipse cx="120" cy="200" rx="40" ry="26" fill="#FFFFFF"/>
+    <path d="M84 168 C 104 184, 136 184, 156 168 L 148 156 C 130 168, 110 168, 92 156 Z" fill="#2E5CF0"/>
+    <path d="M112 175 L 120 194 L 130 173 C 124 178, 116 178, 112 175 Z" fill="#2E5CF0"/>
+    <circle cx="120" cy="177" r="9.5" fill="#F2F4F8" stroke="#B9C0CC" stroke-width="1.5"/>
+    <circle cx="120" cy="180" r="2.8" fill="#8B93A3"/>
+    <circle cx="114.5" cy="173" r="1.6" fill="#8B93A3"/>
+    <circle cx="118" cy="170.2" r="1.6" fill="#8B93A3"/>
+    <circle cx="122" cy="170.2" r="1.6" fill="#8B93A3"/>
+    <circle cx="125.5" cy="173" r="1.6" fill="#8B93A3"/>
+    <ellipse cx="94" cy="216" rx="16" ry="11" fill="#FFFFFF" stroke="#E3E5EA" stroke-width="2"/>
+    <ellipse cx="148" cy="216" rx="16" ry="11" fill="#FFFFFF" stroke="#E3E5EA" stroke-width="2"/>
+    <path d="M58 82 C 46 46, 74 22, 98 52 C 92 70, 80 86, 66 94 Z" fill="#26262B"/>
+    <path d="M65 78 C 58 54, 75 40, 88 60 C 83 72, 74 80, 68 84 Z" fill="#F3C9CE"/>
+    <path d="M182 82 C 194 46, 166 22, 142 52 C 148 70, 160 86, 174 94 Z" fill="#26262B"/>
+    <path d="M175 78 C 182 54, 165 40, 152 60 C 157 72, 166 80, 172 84 Z" fill="#F3C9CE"/>
+    <path d="M120 44 C 116 36, 118 28, 124 24 C 121 32, 122 38, 126 44 Z" fill="#26262B"/>
+    <circle cx="120" cy="118" r="72" fill="#26262B"/>
+    <ellipse cx="66" cy="140" rx="26" ry="22" fill="#26262B"/>
+    <ellipse cx="174" cy="140" rx="26" ry="22" fill="#26262B"/>
+    <path d="M120 78 C 152 78, 172 104, 168 138 C 165 166, 146 186, 120 186 C 94 186, 75 166, 72 138 C 68 104, 88 78, 120 78 Z" fill="#FFFFFF"/>
+    <path d="M120 66 C 138 66, 150 82, 148 100 C 138 92, 128 88, 120 88 C 112 88, 102 92, 92 100 C 90 82, 102 66, 120 66 Z" fill="#26262B"/>
+    <ellipse cx="80" cy="158" rx="16" ry="10" fill="url(#cheekBlush)"/>
+    <ellipse cx="160" cy="158" rx="16" ry="10" fill="url(#cheekBlush)"/>
+    <path d="M120 140 C 126 140, 130 144, 128 149 C 126 154, 114 154, 112 149 C 110 144, 114 140, 120 140 Z" fill="#14161A"/>
+  `;
+
+  const HUSKY_FACES = {
+    // 開心吐舌，App 裡的預設表情
+    happy: `
+      <path d="M92 104 C 98 98, 108 98, 113 103" stroke="#6B7280" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M148 104 C 142 98, 132 98, 127 103" stroke="#6B7280" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <circle cx="98" cy="122" r="13" fill="#FFFFFF"/>
+      <circle cx="142" cy="122" r="13" fill="#FFFFFF"/>
+      <circle cx="99" cy="123" r="9.5" fill="#5AC8E8"/>
+      <circle cx="141" cy="123" r="9.5" fill="#5AC8E8"/>
+      <circle cx="99" cy="123" r="5" fill="#14161A"/>
+      <circle cx="141" cy="123" r="5" fill="#14161A"/>
+      <circle cx="102" cy="119" r="2.4" fill="#FFFFFF"/>
+      <circle cx="144" cy="119" r="2.4" fill="#FFFFFF"/>
+      <path d="M120 152 L 120 160" stroke="#14161A" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M120 160 C 112 168, 100 166, 96 158" stroke="#14161A" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M120 160 C 128 168, 140 166, 144 158" stroke="#14161A" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M114 162 C 114 172, 126 172, 126 162 C 126 168, 114 168, 114 162 Z" fill="#FF9AA6"/>
+    `,
+    // 瞇眼閃亮亮，帳算得剛剛好時用
+    sparkle: `
+      <path d="M90 118 Q 101 129 113 118" stroke="#14161A" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M127 118 Q 138 129 150 118" stroke="#14161A" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M116 153 Q 120 158 124 153" stroke="#14161A" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M40 66 L44 78 L56 82 L44 86 L40 98 L36 86 L24 82 L36 78 Z" fill="#FFD166"/>
+      <path d="M196 90 L199 99 L208 102 L199 105 L196 114 L193 105 L184 102 L193 99 Z" fill="#FFD166"/>
+      <path d="M184 46 L186 52 L192 54 L186 56 L184 62 L182 56 L176 54 L182 52 Z" fill="#FFD166"/>
+    `,
+    // 瞇眼打盹，帳本還是空的時候用
+    sleepy: `
+      <path d="M91 121 Q 101 125 112 121" stroke="#14161A" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+      <path d="M128 121 Q 138 125 149 121" stroke="#14161A" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+      <path d="M115 154 Q 120 157 125 154" stroke="#14161A" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <text x="176" y="58" font-family="'Baloo 2', sans-serif" font-size="24" font-weight="700" fill="#9AA6B4">z</text>
+      <text x="194" y="38" font-family="'Baloo 2', sans-serif" font-size="17" font-weight="700" fill="#9AA6B4">z</text>
+    `
+  };
+
+  function huskySVG(mood){
+    return HUSKY_BASE + (HUSKY_FACES[mood] || HUSKY_FACES.happy);
+  }
+  function paintMascots(){
+    document.querySelectorAll('#mascot-init, #mascot-header, .eemo-mascot-svg').forEach(el=>{
+      el.setAttribute('viewBox','0 0 240 240');
+      el.innerHTML = huskySVG(el.dataset.mood || 'happy');
+    });
+  }
+
+  function hydrateIcons(){
+    document.querySelectorAll('[data-icon]').forEach(el=>{
+      const paths = ICON[el.dataset.icon];
+      if(!paths) return;
+      if(el.tagName.toLowerCase() === 'svg'){
+        el.innerHTML = paths;
+      } else {
+        el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>';
+      }
+    });
+  }
+
+  const AVATAR_COLORS = ['#2E5CF0','#12A150','#EF5B45','#B25CE0','#E0A62E','#2EC0C0','#E05C9A','#6B7280'];
+  function avatarColor(id){
+    let h = 0;
+    for(let i=0;i<id.length;i++) h = (h*31 + id.charCodeAt(i)) % 997;
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
+  }
+
+  /* =====================================================
+     STATE & STORAGE
+  ===================================================== */
+  const LS_KEY = "nini_butler_config_v1";
+  const LS_DATA_KEY = "nini_butler_data_v1";
+
+  const CURRENCIES = ["TWD","THB","JPY","USD","KRW","VND","EUR","HKD","CNY"];
+  const CATEGORIES = [
+    { key:'food',      label:'餐飲', emoji:'🍜', color:'#EF5B45' },
+    { key:'transport',  label:'交通', emoji:'🚕', color:'#2E5CF0' },
+    { key:'stay',       label:'住宿', emoji:'🏨', color:'#B25CE0' },
+    { key:'ticket',     label:'門票', emoji:'🎫', color:'#E0A62E' },
+    { key:'shopping',   label:'購物', emoji:'🛍️', color:'#12A150' },
+    { key:'other',      label:'其他', emoji:'🧾', color:'#6B7280' }
+  ];
+  function categoryOf(key){ return CATEGORIES.find(c=>c.key===key) || CATEGORIES[CATEGORIES.length-1]; }
+
+  let config = loadConfig();
+  let data = loadLocalData();
+  let uiState = { currentView: "init", wizard: null, expandedExpenseId: null };
+  let pendingDelete = null; // { expense, timer }
+
+  function loadConfig(){
+    try{ const raw = localStorage.getItem(LS_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+    return null;
+  }
+  function saveConfig(){ localStorage.setItem(LS_KEY, JSON.stringify(config)); }
+  function loadLocalData(){
+    try{
+      const raw = localStorage.getItem(LS_DATA_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(!Array.isArray(parsed.settlements)) parsed.settlements = [];
+        return parsed;
+      }
+    }catch(e){}
+    return { members: [], expenses: [], settlements: [] };
+  }
+  function saveLocalData(){ localStorage.setItem(LS_DATA_KEY, JSON.stringify(data)); }
+  function uid(){
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+      const r = Math.random()*16|0, v = c==='x'?r:(r&0x3|0x8);
+      return v.toString(16);
+    });
+  }
+  const isOnline = () => !!(config && config.apiUrl);
+
+  /* =====================================================
+     API LAYER with localStorage fallback
+  ===================================================== */
+  const Store = {
+    async getMembers(){
+      if(!isOnline()) return data.members;
+      try{ const res = await apiCall("getMembers", {}); if(res && res.members){ data.members = res.members; saveLocalData(); return res.members; } }
+      catch(e){ console.warn("getMembers failed, using local cache", e); }
+      return data.members;
+    },
+    async addMember(name, temporary){
+      const member = { id: uid(), name: name, temporary: !!temporary };
+      data.members.push(member); saveLocalData();
+      if(isOnline()){ try{ await apiCall("addMember", { member }); }catch(e){ notifySyncFailure(e); } }
+      return member;
+    },
+    async deleteMember(id){
+      data.members = data.members.filter(m => m.id !== id); saveLocalData();
+      if(isOnline()){ try{ await apiCall("deleteMember", { id }); }catch(e){ notifySyncFailure(e); } }
+    },
+    async getExpenses(){
+      if(!isOnline()) return data.expenses;
+      try{ const res = await apiCall("getExpenses", {}); if(res && res.expenses){ data.expenses = res.expenses; saveLocalData(); return res.expenses; } }
+      catch(e){ notifySyncFailure(e); }
+      return data.expenses;
+    },
+    async addExpense(expense){
+      data.expenses.unshift(expense); saveLocalData();
+      if(isOnline()){ try{ await apiCall("addExpense", { expense }); }catch(e){ notifySyncFailure(e); } }
+    },
+    async updateExpense(expense){
+      const idx = data.expenses.findIndex(e => e.id === expense.id);
+      if(idx > -1) data.expenses[idx] = expense; saveLocalData();
+      if(isOnline()){ try{ await apiCall("updateExpense", { expense }); }catch(e){ notifySyncFailure(e); } }
+    },
+    async deleteExpense(id){
+      data.expenses = data.expenses.filter(e => e.id !== id); saveLocalData();
+      if(isOnline()){ try{ await apiCall("deleteExpense", { id }); }catch(e){ notifySyncFailure(e); } }
+    },
+    async getSettlements(){
+      if(!isOnline()) return data.settlements;
+      try{ const res = await apiCall("getSettlements", {}); if(res && res.settlements){ data.settlements = res.settlements; saveLocalData(); return res.settlements; } }
+      catch(e){ notifySyncFailure(e); }
+      return data.settlements;
+    },
+    async addSettlement(settlement){
+      data.settlements.unshift(settlement); saveLocalData();
+      if(isOnline()){ try{ await apiCall("addSettlement", { settlement }); }catch(e){ notifySyncFailure(e); } }
+    },
+    async deleteSettlement(id){
+      data.settlements = data.settlements.filter(s => s.id !== id); saveLocalData();
+      if(isOnline()){ try{ await apiCall("deleteSettlement", { id }); }catch(e){ notifySyncFailure(e); } }
+    }
+  };
+
+  // 把離線期間累積的本機資料，第一次連上 API 網址時整批推上 Google Sheet
+  async function pushAllLocalData(){
+    if(!isOnline()) return;
+    showToast('尼尼正在把之前離線記的帳，一次補進 Google Sheet…');
+    try{
+      for(const m of data.members) await apiCall("addMember", { member: m });
+      for(const s of data.settlements.slice().reverse()) await apiCall("addSettlement", { settlement: s });
+      for(const ex of data.expenses.slice().reverse()) await apiCall("addExpense", { expense: ex });
+      showToast('✅ 離線記的帳都補進 Google Sheet 了');
+    }catch(e){
+      notifySyncFailure(e);
+    }
+  }
+
+  let lastSyncError = null;
+  function notifySyncFailure(err){
+    console.warn('sync failed', err);
+    lastSyncError = (err && err.message) ? err.message : String(err);
+    showToast('⚠️ 尼尼同步失敗了，這筆先幫你存在裝置上，等等可以按右上角重新同步一次', { duration: 4200 });
+    const dot = document.getElementById('sync-dot');
+    const label = document.getElementById('sync-label');
+    if(dot){ dot.className = 'sync-dot off'; }
+    if(label){ label.textContent = '同步失敗，僅存本機（點我重試）'; label.style.cursor = 'pointer'; label.onclick = syncNow; }
+  }
+  async function syncNow(silent){
+    const isSilent = silent === true;
+    if(!isOnline()){ if(!isSilent) showToast('目前是離線模式，先到「設定」貼上記帳 API 網址才能同步喔'); return; }
+    const btn = document.getElementById('dash-sync-btn');
+    if(btn) btn.classList.add('spinning');
+    if(!isSilent) showToast('尼尼正在幫你跟 Google Sheet 對一下帳…');
+    lastSyncError = null;
+    await Store.getMembers();
+    await Store.getExpenses();
+    await Store.getSettlements();
+    if(btn) btn.classList.remove('spinning');
+    if(!lastSyncError && !isSilent){ showToast('✅ 同步完成，最新帳目都拿回來了'); }
+    if(uiState.currentView === 'dashboard') renderDashboard();
+    if(uiState.currentView === 'ledger') renderLedger();
+    if(uiState.currentView === 'settlement') renderSettlement();
+    if(uiState.currentView === 'members') renderMembers();
+  }
+  function setupAutoSync(){
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.visibilityState === 'visible' && isOnline()) syncNow(true);
+    });
+    setInterval(()=>{
+      if(isOnline() && document.visibilityState === 'visible') syncNow(true);
+    }, 30000);
+  }
+
+  async function apiCall(action, payload){
+    const body = Object.assign({ action }, payload);
+    const res = await fetch(config.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error("API error " + res.status);
+    const json = await res.json();
+    if(json && json.error) throw new Error(json.error);
+    return json;
+  }
+
+  /* =====================================================
+     UTIL
+  ===================================================== */
+  function fmt(n){ return (Number(n)||0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  function todayLabel(ts){ const d = new Date(ts); return (d.getMonth()+1) + "/" + d.getDate(); }
+  function showToast(msg, opts){
+    opts = opts || {};
+    const t = document.getElementById('toast');
+    t.innerHTML = '';
+    const span = document.createElement('span');
+    span.textContent = msg;
+    t.appendChild(span);
+    if(opts.undoLabel){
+      const btn = document.createElement('button');
+      btn.className = 'undo-btn';
+      btn.textContent = opts.undoLabel;
+      btn.onclick = opts.onUndo;
+      t.appendChild(btn);
+    }
+    t.classList.add('show');
+    clearTimeout(showToast._timer);
+    if(!opts.sticky){
+      showToast._timer = setTimeout(()=> t.classList.remove('show'), opts.duration || 2400);
+    }
+  }
+  function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+  function initials(name){ return (name||"?").trim().slice(0,1).toUpperCase(); }
+  function memberName(id){ const m = data.members.find(x=>x.id===id); return m ? m.name : id; }
+  function getSelfId(){
+    if(config.selfId && data.members.some(m=>m.id===config.selfId)) return config.selfId;
+    const byName = data.members.find(m=>m.name===config.nickname);
+    if(byName){ config.selfId = byName.id; saveConfig(); return byName.id; }
+    return null;
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function greetingFor(name){
+    const h = new Date().getHours();
+    const part = h < 5 ? '這麼晚還沒睡呀' : h < 11 ? '早安' : h < 18 ? '午安' : '晚安';
+    return (name ? part+'，'+name : '嗨，歡迎回來') + '！';
+  }
+
+  /* =====================================================
+     CUSTOM NUMPAD
+  ===================================================== */
+  let numpadState = null; // { buffer, onChange, onDone, suffix, allowDecimal }
+  function buildNumpadGrid(){
+    const grid = document.getElementById('numpad-grid');
+    const keys = ['1','2','3','4','5','6','7','8','9','.','0','back'];
+    grid.innerHTML = keys.map(k=>{
+      if(k === 'back') return '<button class="numkey" data-key="back">'+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;">'+ICON.backspace+'</svg></button>';
+      return '<button class="numkey" data-key="'+k+'">'+k+'</button>';
+    }).join('') + '<button class="numkey accent" data-key="done" style="grid-column:span 3;">完成</button>';
+    grid.querySelectorAll('.numkey').forEach(btn=>{
+      btn.addEventListener('click', ()=> handleNumKey(btn.dataset.key));
+    });
+  }
+  function openNumpad(initialValue, opts){
+    numpadState = {
+      buffer: (initialValue === '' || initialValue == null) ? '' : String(initialValue),
+      onChange: opts.onChange || function(){},
+      onDone: opts.onDone || function(){},
+      suffix: opts.suffix || '',
+      allowDecimal: opts.allowDecimal !== false
+    };
+    updateNumpadDisplay();
+    document.getElementById('numpad-overlay').classList.add('active');
+  }
+  function closeNumpad(){
+    document.getElementById('numpad-overlay').classList.remove('active');
+    if(numpadState && numpadState.onDone) numpadState.onDone(numpadState.buffer);
+    numpadState = null;
+  }
+  function handleNumKey(key){
+    if(!numpadState) return;
+    if(key === 'done'){ closeNumpad(); return; }
+    if(key === 'back'){ numpadState.buffer = numpadState.buffer.slice(0,-1); }
+    else if(key === '.'){
+      if(!numpadState.allowDecimal) return;
+      if(!numpadState.buffer.includes('.')) numpadState.buffer += (numpadState.buffer===''?'0.':'.');
+    } else {
+      if(numpadState.buffer === '0') numpadState.buffer = key;
+      else numpadState.buffer += key;
+    }
+    updateNumpadDisplay();
+    numpadState.onChange(numpadState.buffer);
+  }
+  function updateNumpadDisplay(){
+    const disp = document.getElementById('numpad-display');
+    const v = numpadState.buffer === '' ? '0' : numpadState.buffer;
+    disp.textContent = v + (numpadState.suffix || '');
+  }
+  document.getElementById('numpad-overlay').addEventListener('click', (e)=>{
+    if(e.target.id === 'numpad-overlay') closeNumpad();
+  });
+  buildNumpadGrid();
+
+  /* =====================================================
+     MODAL
+  ===================================================== */
+  function confirmModal(title, body){
+    return new Promise((resolve)=>{
+      const overlay = document.getElementById('modal-overlay');
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').textContent = body;
+      overlay.classList.add('active');
+      const cleanup = (result)=>{
+        overlay.classList.remove('active');
+        document.getElementById('modal-confirm').onclick = null;
+        document.getElementById('modal-cancel').onclick = null;
+        resolve(result);
+      };
+      document.getElementById('modal-confirm').onclick = ()=>cleanup(true);
+      document.getElementById('modal-cancel').onclick = ()=>cleanup(false);
+    });
+  }
+
+  /* =====================================================
+     ROUTER
+  ===================================================== */
+  function navigate(view){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+view).classList.add('active');
+    document.querySelectorAll('.navbtn').forEach(n=>{ n.classList.toggle('active', n.dataset.nav === view); });
+    document.getElementById('bottomnav').style.display = ['dashboard','ledger','settlement','members'].includes(view) ? 'flex' : 'none';
+    uiState.currentView = view;
+    if(view === 'dashboard') renderDashboard();
+    if(view === 'ledger') renderLedger();
+    if(view === 'settlement') renderSettlement();
+    if(view === 'members') renderMembers();
+    if(view === 'settings') renderSettings();
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('[data-nav]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const target = el.dataset.nav;
+      if(target === 'wizard'){ openWizard(); } else navigate(target);
+    });
+  });
+
+  /* =====================================================
+     INIT SCREEN
+  ===================================================== */
+  document.getElementById('init-start').addEventListener('click', async ()=>{
+    const apiUrl = document.getElementById('init-apiurl').value.trim();
+    const nickname = document.getElementById('init-nickname').value.trim();
+    if(!nickname){ showToast('尼尼需要知道你的名字才能開始記帳'); return; }
+    if(!apiUrl){
+      const ok = await confirmModal('先離線記帳嗎？', '你還沒貼記帳 API 網址，這樣記的帳只會存在「這台裝置」上，不會同步到 Google Sheet，也不會跟旅伴同步。之後隨時可以到「設定」補上網址開始同步。');
+      if(!ok) return;
+    }
+    config = { apiUrl: apiUrl || null, nickname: nickname, selfId: null };
+    saveConfig();
+    const me = await Store.addMember(nickname, false);
+    config.selfId = me.id;
+    saveConfig();
+    showToast('尼尼已經準備好了，開始記帳吧！');
+    boot();
+  });
+  document.getElementById('init-howto').addEventListener('click', ()=>{
+    confirmModal('怎麼取得記帳網址？',
+      '在你的旅行 Google Sheet 裡打開「擴充功能 → Apps Script」，貼上尼尼提供的後端程式碼（Code.gs），部署為「網頁應用程式」，存取權選「知道連結的任何人」，把產生的網址貼回這裡即可。沒有也沒關係，資料會先存在這台裝置上。');
+  });
+
+  /* =====================================================
+     DASHBOARD
+  ===================================================== */
+  function renderDashboard(){
+    document.getElementById('dash-title').textContent = greetingFor(config.nickname);
+    document.getElementById('sync-dot').className = 'sync-dot ' + (isOnline() ? 'on' : 'off');
+    document.getElementById('sync-label').textContent = isOnline() ? '已連線同步' : '離線模式（僅存本機）';
+
+    const balances = computeBalancesByCurrency();
+    const selfId = getSelfId();
+    const currencies = Object.keys(balances);
+    let myNet = 0, myCurrency = null;
+    if(currencies.length){ myCurrency = currencies[0]; myNet = (selfId && balances[myCurrency][selfId]) || 0; }
+    const heroAmount = document.getElementById('hero-amount');
+    if(currencies.length === 0){ heroAmount.textContent = '0'; heroAmount.style.color = '#fff'; }
+    else{
+      const sign = myNet > 0.01 ? '+' : (myNet < -0.01 ? '−' : '');
+      heroAmount.textContent = sign + fmt(Math.abs(myNet)) + ' ' + myCurrency;
+      heroAmount.style.color = myNet > 0.01 ? '#8FE3B3' : (myNet < -0.01 ? '#FFC7BC' : '#fff');
+    }
+    document.getElementById('hero-meta').textContent = '共 ' + data.expenses.length + ' 筆支出';
+
+    const recent = data.expenses.slice(0,5);
+    const box = document.getElementById('dash-recent');
+    box.innerHTML = recent.length === 0
+      ? emptyStateHTML('尼尼還沒收到任何帳喔','點下面的 ＋ 讓尼尼幫你記第一筆吧')
+      : recent.map(e => recentItemHTML(e)).join('');
+  }
+
+  function emptyStateHTML(title, sub, mood){
+    return '<div class="empty-state"><svg class="eemo-mascot-svg" data-mood="'+(mood||'sleepy')+'" style="width:104px;height:104px;margin-bottom:8px;" id="mascot-empty-'+Math.random().toString(36).slice(2)+'"></svg><div class="etitle">'+title+'</div><div>'+sub+'</div></div>';
+  }
+  function recentItemHTML(e){
+    return '<div class="recent-item">'+
+      '<div class="remoji">'+expenseEmoji(e)+'</div>'+
+      '<div class="rinfo"><div class="rnote">'+escapeHtml(e.note || '未命名支出')+'</div>'+
+      '<div class="rmeta">'+escapeHtml(memberName(e.payer))+' 付款・'+todayLabel(e.created_at)+'</div></div>'+
+      '<div class="ramount mono">'+fmt(e.amount)+' '+e.currency+'</div>'+
+    '</div>';
+  }
+  function expenseEmoji(e){
+    if(e && e.category) return categoryOf(e.category).emoji;
+    return noteEmoji(e && e.note);
+  }
+  function noteEmoji(note){
+    if(!note) return '🧾';
+    const n = note.toLowerCase();
+    if(n.includes('grab')||n.includes('計程')||n.includes('taxi')) return '🚕';
+    if(n.includes('7-11')||n.includes('超商')) return '🏪';
+    if(n.includes('餐') || n.includes('food')) return '🍜';
+    if(n.includes('飯店')||n.includes('hotel')) return '🏨';
+    if(n.includes('門票')) return '🎫';
+    if(n.includes('交通')) return '🚌';
+    return '🧾';
+  }
+
+  /* =====================================================
+     WIZARD
+  ===================================================== */
+  const WIZ_STEPS = ['payer','amount','note','participants','split'];
+
+  function openWizard(existingExpense){
+    uiState.wizard = {
+      stepIndex: 0,
+      editingId: existingExpense ? existingExpense.id : null,
+      payer: existingExpense ? existingExpense.payer : (getSelfId() || config.nickname),
+      amount: existingExpense ? String(existingExpense.amount) : '',
+      currency: existingExpense ? existingExpense.currency : (config.lastCurrency || 'TWD'),
+      note: existingExpense ? existingExpense.note : '',
+      category: existingExpense ? (existingExpense.category || 'other') : 'other',
+      participants: existingExpense ? existingExpense.participants.slice() : data.members.map(m=>m.id),
+      split_type: existingExpense ? existingExpense.split_type : 'equal',
+      split_data: existingExpense ? Object.assign({}, existingExpense.split_data) : {}
+    };
+    document.getElementById('wiz-title').textContent = existingExpense ? '編輯支出' : '新增支出';
+    navigate('wizard');
+    renderWizardStep();
+  }
+
+  function renderWizardStep(){
+    const w = uiState.wizard;
+    const step = WIZ_STEPS[w.stepIndex];
+    document.getElementById('wiz-progress').innerHTML = WIZ_STEPS.map((s,i)=>
+      '<div class="dot '+(i<=w.stepIndex?'done':'')+'"></div>').join('');
+    const content = document.getElementById('wiz-content');
+    document.getElementById('wiz-back').style.visibility = w.stepIndex===0 ? 'hidden' : 'visible';
+    document.getElementById('wiz-next').textContent = (w.stepIndex === WIZ_STEPS.length-1) ? '✔ 送出' : '下一步';
+
+    if(step === 'payer'){
+      content.innerHTML =
+        '<div class="step-title">這筆錢是誰先墊的？</div><div class="step-sub">尼尼想記清楚，才不會算錯帳喔</div>'+
+        '<div class="stack" id="payer-list"></div>'+
+        '<button class="link-btn" id="wiz-add-member-1">＋ 新增旅伴</button>';
+      const list = document.getElementById('payer-list');
+      list.innerHTML = data.members.map(m=>
+        '<div class="radio-row '+(w.payer===m.id?'selected':'')+'" data-id="'+m.id+'">'+
+          '<div class="ravatar" style="background:'+avatarColor(m.id)+'22;color:'+avatarColor(m.id)+';">'+initials(m.name)+'</div>'+
+          '<div class="rname">'+escapeHtml(m.name)+'</div><div class="rdot"></div>'+
+        '</div>').join('');
+      list.querySelectorAll('.radio-row').forEach(row=>{
+        row.addEventListener('click', ()=>{ w.payer = row.dataset.id; renderWizardStep(); });
+      });
+      document.getElementById('wiz-add-member-1').addEventListener('click', ()=>quickAddMember(renderWizardStep));
+    }
+
+    if(step === 'amount'){
+      content.innerHTML =
+        '<div class="step-title">花了多少呢？</div><div class="step-sub">跟尼尼說金額和幣別</div>'+
+        '<div class="amount-input-wrap">'+
+          '<select id="wiz-currency">'+CURRENCIES.map(c=>'<option value="'+c+'" '+(c===w.currency?'selected':'')+'>'+c+'</option>').join('')+'</select>'+
+          '<div class="amount-display '+(w.amount?'':'placeholder')+'" id="wiz-amount-display">'+(w.amount || '輕點輸入金額')+'</div>'+
+        '</div>';
+      document.getElementById('wiz-currency').addEventListener('change', e=>{ w.currency = e.target.value; });
+      document.getElementById('wiz-amount-display').addEventListener('click', function(){
+        this.classList.add('focused');
+        openNumpad(w.amount, {
+          allowDecimal: true,
+          onChange: (val)=>{ w.amount = val; this.textContent = val || '0'; this.classList.remove('placeholder'); },
+          onDone: ()=>{ this.classList.remove('focused'); this.textContent = w.amount || '輕點輸入金額'; if(!w.amount) this.classList.add('placeholder'); }
+        });
+      });
+    }
+
+    if(step === 'note'){
+      content.innerHTML =
+        '<div class="step-title">這是什麼類別？</div><div class="step-sub">尼尼會用這個幫你統計花費</div>'+
+        '<div class="chip-row" id="wiz-category-chips">'+CATEGORIES.map(c=>'<div class="chip cat-chip" data-key="'+c.key+'">'+c.emoji+' '+c.label+'</div>').join('')+'</div>'+
+        '<div class="field" style="margin-top:20px;"><label>想加個備註嗎？（選填）</label>'+
+        '<input type="text" id="wiz-note" placeholder="例如：鼎泰豐晚餐" value="'+escapeHtml(w.note||'')+'"></div>';
+      function refreshCategoryChips(){
+        document.querySelectorAll('#wiz-category-chips .cat-chip').forEach(chip=>{
+          chip.classList.toggle('selected', chip.dataset.key === w.category);
+        });
+      }
+      refreshCategoryChips();
+      document.getElementById('wiz-note').addEventListener('input', e=>{ w.note = e.target.value; });
+      document.querySelectorAll('#wiz-category-chips .cat-chip').forEach(chip=>{
+        chip.addEventListener('click', ()=>{ w.category = chip.dataset.key; refreshCategoryChips(); });
+      });
+    }
+
+    if(step === 'participants'){
+      content.innerHTML =
+        '<div class="step-title">這筆要跟誰一起分？</div><div class="step-sub">勾選要一起分攤的旅伴</div>'+
+        '<div class="stack" id="participant-list"></div>'+
+        '<button class="link-btn" id="wiz-add-member-2">＋ 新增旅伴</button>';
+      const list = document.getElementById('participant-list');
+      list.innerHTML = data.members.map(m=>
+        '<div class="checkrow '+(w.participants.includes(m.id)?'selected':'')+'" data-id="'+m.id+'">'+
+          '<div class="ravatar">'+initials(m.name)+'</div><div class="cname">'+escapeHtml(m.name)+'</div>'+
+          '<div class="cbox">'+(w.participants.includes(m.id)?'✓':'')+'</div>'+
+        '</div>').join('');
+      list.querySelectorAll('.checkrow').forEach(row=>{
+        row.addEventListener('click', ()=>{
+          const id = row.dataset.id;
+          const idx = w.participants.indexOf(id);
+          if(idx>-1) w.participants.splice(idx,1); else w.participants.push(id);
+          renderWizardStep();
+        });
+      });
+      document.getElementById('wiz-add-member-2').addEventListener('click', ()=>quickAddMember((m)=>{
+        w.participants.push(m.id); renderWizardStep();
+      }));
+    }
+
+    if(step === 'split'){
+      content.innerHTML =
+        '<div class="step-title">怎麼分最公平？</div><div class="step-sub">選一種尼尼幫你分帳的方式</div>'+
+        '<div class="stack" style="margin-bottom:16px;">'+
+          splitOptionHTML('equal','平均分攤')+
+          splitOptionHTML('ratio','按比例分攤（%）')+
+          splitOptionHTML('custom','自訂金額')+
+        '</div>'+
+        '<div id="split-detail"></div>';
+      document.querySelectorAll('.split-opt').forEach(row=>{
+        row.addEventListener('click', ()=>{
+          const prevType = w.split_type;
+          w.split_type = row.dataset.type;
+          if(w.split_type === 'ratio' && prevType !== 'ratio'){
+            const even = w.participants.length ? Math.floor(100 / w.participants.length) : 0;
+            w.split_data = {};
+            w.participants.forEach((id,i)=>{ w.split_data[id] = (i===0) ? (100 - even*(w.participants.length-1)) : even; });
+          }
+          renderWizardStep();
+        });
+      });
+      renderSplitDetail();
+    }
+  }
+
+  function splitOptionHTML(type, label){
+    const w = uiState.wizard;
+    return '<div class="radio-row split-opt '+(w.split_type===type?'selected':'')+'" data-type="'+type+'">'+
+      '<div class="rdot"></div><div class="rname">'+label+'</div></div>';
+  }
+
+  function renderSplitDetail(){
+    const w = uiState.wizard;
+    const box = document.getElementById('split-detail');
+    if(!box) return;
+    const parts = w.participants;
+
+    if(w.split_type === 'equal'){
+      const each = parts.length ? (Number(w.amount)||0)/parts.length : 0;
+      box.innerHTML = parts.map(id=>
+        '<div class="split-detail-row"><div class="sname">'+escapeHtml(memberName(id))+'</div><div class="mono">'+fmt(each)+'</div></div>'
+      ).join('') + '<div class="split-sum-note ok">每人平均分攤 '+fmt(each)+' '+w.currency+'</div>';
+      return;
+    }
+
+    if(w.split_type === 'ratio'){
+      box.innerHTML = parts.map(id=>{
+        const val = w.split_data[id] != null ? w.split_data[id] : 0;
+        return '<div class="split-detail-row"><div class="sname">'+escapeHtml(memberName(id))+'</div>'+
+          '<button class="svalbtn" data-id="'+id+'" data-kind="ratio">'+fmt(val)+'%</button></div>';
+      }).join('') + '<div id="ratio-sum-note"></div>';
+      box.querySelectorAll('.svalbtn[data-kind="ratio"]').forEach(btn=>{
+        btn.addEventListener('click', function(){
+          const id = this.dataset.id;
+          this.classList.add('focused');
+          openNumpad(w.split_data[id] != null ? String(w.split_data[id]) : '', {
+            allowDecimal: true, suffix: '%',
+            onChange: (val)=>{ w.split_data[id] = val === '' ? 0 : Number(val); this.textContent = fmt(w.split_data[id])+'%'; updateRatioNote(); },
+            onDone: ()=>{ this.classList.remove('focused'); }
+          });
+        });
+      });
+      updateRatioNote();
+      return;
+    }
+
+    if(w.split_type === 'custom'){
+      box.innerHTML = parts.map(id=>{
+        const val = w.split_data[id] != null ? w.split_data[id] : '';
+        return '<div class="split-detail-row"><div class="sname">'+escapeHtml(memberName(id))+'</div>'+
+          '<button class="svalbtn" data-id="'+id+'" data-kind="custom">'+(val!==''?fmt(val):'0')+'</button></div>';
+      }).join('') + '<div id="custom-sum-note"></div>';
+      box.querySelectorAll('.svalbtn[data-kind="custom"]').forEach(btn=>{
+        btn.addEventListener('click', function(){
+          const id = this.dataset.id;
+          this.classList.add('focused');
+          openNumpad(w.split_data[id] != null ? String(w.split_data[id]) : '', {
+            allowDecimal: true,
+            onChange: (val)=>{ w.split_data[id] = val === '' ? 0 : Number(val); this.textContent = fmt(w.split_data[id]); updateCustomNote(); },
+            onDone: ()=>{ this.classList.remove('focused'); }
+          });
+        });
+      });
+      updateCustomNote();
+      return;
+    }
+  }
+
+  function updateRatioNote(){
+    const w = uiState.wizard;
+    const note = document.getElementById('ratio-sum-note');
+    if(!note) return;
+    const totalPct = w.participants.reduce((s,id)=> s + (Number(w.split_data[id])||0), 0);
+    const amt = Number(w.amount)||0;
+    if(totalPct <= 0){
+      note.className = 'split-sum-note err'; note.textContent = '請輸入每人的比例（不可全為 0%）';
+      return;
+    }
+    const preview = w.participants.map(id=>{
+      const r = Number(w.split_data[id])||0;
+      return memberName(id)+' '+fmt(amt*r/totalPct);
+    }).join('、');
+    if(Math.abs(totalPct - 100) < 0.01){
+      note.className = 'split-sum-note ok'; note.textContent = '總計剛好 100%・'+preview;
+    } else {
+      note.className = 'split-sum-note info'; note.textContent = '總計 '+fmt(totalPct)+'%，尼尼會自動依比例換算：'+preview;
+    }
+  }
+  function updateCustomNote(){
+    const w = uiState.wizard;
+    const note = document.getElementById('custom-sum-note');
+    if(!note) return;
+    const sum = w.participants.reduce((s,id)=> s + (Number(w.split_data[id])||0), 0);
+    const total = Number(w.amount)||0;
+    const diff = Math.round((total - sum)*100)/100;
+    if(Math.abs(diff) < 0.01){
+      note.className = 'split-sum-note ok'; note.textContent = '加總剛好等於 '+fmt(total)+' '+w.currency;
+    } else {
+      note.className = 'split-sum-note err';
+      note.textContent = diff > 0 ? '還差 '+fmt(diff)+' '+w.currency+' 才等於總額' : '超過總額 '+fmt(-diff)+' '+w.currency;
+    }
+  }
+
+  function quickAddMember(cb){
+    const name = prompt('旅伴的名字？');
+    if(!name || !name.trim()) return;
+    Store.addMember(name.trim(), false).then(m=>{
+      showToast('尼尼記住旅伴「'+m.name+'」了 🐾');
+      if(cb) cb(m);
+    });
+  }
+
+  document.getElementById('wiz-close').addEventListener('click', async ()=>{
+    const ok = await confirmModal('放棄這筆支出？','填寫的內容不會被儲存。');
+    if(ok) navigate('dashboard');
+  });
+  document.getElementById('wiz-back').addEventListener('click', ()=>{
+    const w = uiState.wizard;
+    if(w.stepIndex>0){ w.stepIndex--; renderWizardStep(); }
+  });
+  document.getElementById('wiz-next').addEventListener('click', async ()=>{
+    const btn = document.getElementById('wiz-next');
+    if(btn.disabled) return; // 防止連續快點造成重複送出
+    const w = uiState.wizard;
+    const step = WIZ_STEPS[w.stepIndex];
+    if(step === 'payer' && !w.payer){ showToast('尼尼還不知道這筆是誰付的錢，選一下吧'); return; }
+    if(step === 'amount'){ if(!w.amount || Number(w.amount) <= 0){ showToast('金額好像怪怪的，再確認一下？'); return; } }
+    if(step === 'participants' && w.participants.length === 0){ showToast('至少要選一位一起分攤的旅伴喔'); return; }
+    if(step === 'split'){
+      if(w.split_type === 'ratio'){
+        const totalPct = w.participants.reduce((s,id)=> s + (Number(w.split_data[id])||0), 0);
+        if(totalPct <= 0){ showToast('比例還沒填，尼尼不知道怎麼分'); return; }
+      }
+      if(w.split_type === 'custom'){
+        const sum = w.participants.reduce((s,id)=> s + (Number(w.split_data[id])||0), 0);
+        if(Math.abs(sum - Number(w.amount)) > 0.01){ showToast('自訂金額加起來要等於總額，尼尼才能送出'); return; }
+      }
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '尼尼記錄中…';
+      try{ await submitWizard(); }
+      finally{ btn.disabled = false; btn.textContent = originalText; }
+      return;
+    }
+    w.stepIndex++;
+    renderWizardStep();
+  });
+
+  async function submitWizard(){
+    const w = uiState.wizard;
+    let split_data = {};
+    if(w.split_type === 'ratio' || w.split_type === 'custom'){
+      w.participants.forEach(id=> split_data[id] = Number(w.split_data[id])||0);
+    }
+    const expense = {
+      id: w.editingId || uid(),
+      date: Date.now(),
+      payer: w.payer,
+      amount: Number(w.amount),
+      currency: w.currency,
+      note: w.note || '',
+      category: w.category || 'other',
+      participants: w.participants.slice(),
+      split_type: w.split_type,
+      split_data: split_data,
+      created_at: w.editingId ? (data.expenses.find(e=>e.id===w.editingId)||{}).created_at || Date.now() : Date.now()
+    };
+    config.lastCurrency = w.currency; saveConfig();
+    if(w.editingId){ await Store.updateExpense(expense); showToast('尼尼已幫你更新這筆支出'); }
+    else{ await Store.addExpense(expense); showToast('尼尼已幫你記下這筆支出・已同步到帳本'); }
+    navigate('ledger');
+  }
+
+  /* =====================================================
+     LEDGER
+  ===================================================== */
+  function renderLedger(){
+    document.getElementById('ledger-sub').textContent = '共 '+data.expenses.length+' 筆';
+    const box = document.getElementById('ledger-list');
+    if(data.expenses.length === 0){ box.innerHTML = emptyStateHTML('帳本還是空白的','按右上角的 ＋，讓尼尼幫你記下第一筆吧'); paintMascots(); return; }
+    const sorted = data.expenses.slice().sort((a,b)=> (b.created_at||0)-(a.created_at||0));
+    box.innerHTML = sorted.map(e => expenseCardHTML(e)).join('');
+    box.querySelectorAll('.expense-head').forEach(head=>{
+      head.addEventListener('click', ()=>{
+        const id = head.dataset.id;
+        uiState.expandedExpenseId = (uiState.expandedExpenseId === id) ? null : id;
+        renderLedger();
+      });
+    });
+    box.querySelectorAll('.js-edit').forEach(btn=>{
+      btn.addEventListener('click', (ev)=>{ ev.stopPropagation(); const exp = data.expenses.find(e=>e.id===btn.dataset.id); if(exp) openWizard(exp); });
+    });
+    box.querySelectorAll('.js-delete').forEach(btn=>{
+      btn.addEventListener('click', async (ev)=>{
+        ev.stopPropagation();
+        const ok = await confirmModal('刪除這筆支出？','刪除後無法復原。');
+        if(ok) deleteExpenseWithUndo(btn.dataset.id);
+      });
+    });
+  }
+
+  function deleteExpenseWithUndo(id){
+    const idx = data.expenses.findIndex(e=>e.id===id);
+    if(idx === -1) return;
+    const removed = data.expenses[idx];
+    data.expenses.splice(idx,1); saveLocalData();
+    renderLedger();
+    if(uiState.currentView === 'dashboard') renderDashboard();
+    showToast('已刪除這筆支出', {
+      undoLabel: '復原',
+      duration: 4500,
+      onUndo: ()=>{
+        clearTimeout(pendingDelete && pendingDelete.timer);
+        data.expenses.splice(idx,0,removed); saveLocalData();
+        renderLedger();
+        if(uiState.currentView === 'dashboard') renderDashboard();
+        hideToast();
+        showToast('已復原');
+        pendingDelete = null;
+      }
+    });
+    pendingDelete = { expense: removed, timer: setTimeout(()=>{
+      if(pendingDelete && pendingDelete.expense.id === id){
+        Store.deleteExpense(id);
+        pendingDelete = null;
+      }
+    }, 4500) };
+  }
+
+  function expenseCardHTML(e){
+    const open = uiState.expandedExpenseId === e.id;
+    const shares = computeShares(e);
+    return '<div class="expense-card">'+
+      '<div class="expense-head" data-id="'+e.id+'">'+
+        '<div class="eemoji">'+expenseEmoji(e)+'</div>'+
+        '<div class="einfo"><div class="enote">'+escapeHtml(e.note||'未命名支出')+'</div>'+
+        '<div class="emeta">'+escapeHtml(memberName(e.payer))+' 付款・'+todayLabel(e.created_at)+'</div></div>'+
+        '<div class="eamount mono">'+fmt(e.amount)+' '+e.currency+'</div>'+
+      '</div>'+
+      '<div class="expense-body '+(open?'open':'')+'">'+
+        '<div class="dashed"></div>'+
+        Object.keys(shares).map(id=>'<div class="split-line"><span>'+escapeHtml(memberName(id))+'</span><span>'+fmt(shares[id])+'</span></div>').join('')+
+        '<div class="expense-actions">'+
+          '<button class="btn btn-ghost btn-sm js-edit" data-id="'+e.id+'">編輯</button>'+
+          '<button class="btn btn-danger-ghost btn-sm js-delete" data-id="'+e.id+'">刪除</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }
+
+  /* =====================================================
+     SPLIT / SETTLEMENT ENGINE
+  ===================================================== */
+  function computeShares(e){
+    const shares = {};
+    const amount = Number(e.amount)||0;
+    if(e.split_type === 'equal' || !e.split_type){
+      const each = e.participants.length ? amount/e.participants.length : 0;
+      e.participants.forEach(id=> shares[id] = each);
+    } else if(e.split_type === 'ratio'){
+      const total = e.participants.reduce((s,id)=> s + (Number(e.split_data[id])||0), 0);
+      e.participants.forEach(id=> shares[id] = total>0 ? amount*(Number(e.split_data[id])||0)/total : 0);
+    } else if(e.split_type === 'custom'){
+      e.participants.forEach(id=> shares[id] = Number(e.split_data[id])||0);
+    }
+    return shares;
+  }
+
+  function computeBalancesByCurrency(){
+    const result = {};
+    data.expenses.forEach(e=>{
+      const cur = e.currency || 'TWD';
+      if(!result[cur]) result[cur] = {};
+      const shares = computeShares(e);
+      result[cur][e.payer] = (result[cur][e.payer]||0) + (Number(e.amount)||0);
+      Object.keys(shares).forEach(id=>{ result[cur][id] = (result[cur][id]||0) - shares[id]; });
+    });
+    (data.settlements || []).forEach(s=>{
+      const cur = s.currency || 'TWD';
+      if(!result[cur]) result[cur] = {};
+      const amt = Number(s.amount) || 0;
+      // 還款人實際付出了錢 → 他的欠款減少（餘額增加）；收款人已經收到錢 → 他的應收減少（餘額減少）
+      result[cur][s.from] = (result[cur][s.from]||0) + amt;
+      result[cur][s.to] = (result[cur][s.to]||0) - amt;
+    });
+    return result;
+  }
+
+  function simplifyDebts(balanceMap){
+    const creditors = [], debtors = [];
+    Object.keys(balanceMap).forEach(id=>{
+      const v = balanceMap[id];
+      if(v > 0.01) creditors.push({ id, v });
+      else if(v < -0.01) debtors.push({ id, v: -v });
+    });
+    creditors.sort((a,b)=>b.v-a.v);
+    debtors.sort((a,b)=>b.v-a.v);
+    const txns = [];
+    let i=0, j=0;
+    while(i < debtors.length && j < creditors.length){
+      const pay = Math.min(debtors[i].v, creditors[j].v);
+      txns.push({ from: debtors[i].id, to: creditors[j].id, amount: pay });
+      debtors[i].v -= pay; creditors[j].v -= pay;
+      if(debtors[i].v < 0.01) i++;
+      if(creditors[j].v < 0.01) j++;
+    }
+    return txns;
+  }
+
+  function computeCategoryTotals(){
+    const result = {};
+    data.expenses.forEach(e=>{
+      const cur = e.currency || 'TWD';
+      const cat = e.category || 'other';
+      if(!result[cur]) result[cur] = {};
+      result[cur][cat] = (result[cur][cat]||0) + (Number(e.amount)||0);
+    });
+    return result;
+  }
+
+  function buildCategoryChartHTML(){
+    const totalsByCurrency = computeCategoryTotals();
+    const currencies = Object.keys(totalsByCurrency);
+    if(currencies.length === 0) return '';
+    let html = '';
+    let any = false;
+    currencies.forEach(cur=>{
+      const totals = totalsByCurrency[cur];
+      const cats = Object.keys(totals).filter(k=>totals[k]>0);
+      if(cats.length < 2) return; // 只有一種分類時畫圖沒有意義，略過
+      any = true;
+      const grandTotal = cats.reduce((s,k)=>s+totals[k],0);
+      let acc = 0;
+      const stops = cats.map(k=>{
+        const c = categoryOf(k);
+        const pct = totals[k]/grandTotal*100;
+        const start = acc; acc += pct;
+        return c.color+' '+start.toFixed(2)+'% '+acc.toFixed(2)+'%';
+      }).join(', ');
+      html += '<div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:16px;">';
+      html += '<div class="donut" style="background:conic-gradient('+stops+');"><div class="donut-hole">'+cur+'</div></div>';
+      html += '<div style="flex:1;min-width:0;">'+cats.sort((a,b)=>totals[b]-totals[a]).map(k=>{
+        const c = categoryOf(k);
+        return '<div class="cat-legend-row"><span class="cat-dot" style="background:'+c.color+';"></span>'+c.emoji+' '+c.label+
+          '<span class="mono" style="margin-left:auto;">'+fmt(totals[k])+'</span></div>';
+      }).join('')+'</div>';
+      html += '</div>';
+    });
+    return any ? ('<div class="section-title" style="margin-top:18px;">支出分類</div>' + html) : '';
+  }
+
+  function renderSettlement(){
+    const box = document.getElementById('settlement-content');
+    if(data.expenses.length === 0){ box.innerHTML = emptyStateHTML('還沒帳可以結算','先記幾筆支出，尼尼就能幫你把帳算得清清楚楚','sleepy'); paintMascots(); return; }
+    const balancesByCurrency = computeBalancesByCurrency();
+    let html = '';
+    let allSettled = true;
+    const allTxns = []; // 攤平存起來給「標記已還款」按鈕跟 LINE 摘要共用
+    Object.keys(balancesByCurrency).forEach(cur=>{
+      const balances = balancesByCurrency[cur];
+      const txns = simplifyDebts(balances);
+      if(txns.length) allSettled = false;
+      txns.forEach(t=> allTxns.push(Object.assign({currency:cur}, t)));
+      const total = data.expenses.filter(e=>e.currency===cur).reduce((s,e)=>s+Number(e.amount||0),0);
+      html += '<div class="currency-block">';
+      html += '<div class="currency-tag">'+cur+'</div>';
+      html += '<div class="card" style="margin-bottom:12px;">';
+      html += '<div class="helper" style="margin-bottom:8px;">總支出 '+fmt(total)+' '+cur+'</div>';
+      Object.keys(balances).forEach(id=>{
+        const v = balances[id];
+        const badge = v > 0.01 ? 'badge-green' : (v < -0.01 ? 'badge-red' : 'badge-grey');
+        const label = v > 0.01 ? '應收' : (v < -0.01 ? '應付' : '打平');
+        html += '<div class="balance-row"><div class="bavatar" style="background:'+avatarColor(id)+'22;color:'+avatarColor(id)+';">'+initials(memberName(id))+'</div><div class="bname">'+escapeHtml(memberName(id))+'</div>'+
+          '<span class="badge '+badge+'">'+label+'</span>'+
+          '<div class="bamt mono" style="min-width:80px;text-align:right;">'+(v>=0?'+':'−')+fmt(Math.abs(v))+'</div></div>';
+      });
+      html += '</div>';
+      if(txns.length){
+        html += '<div class="section-title">建議還款</div>';
+        txns.forEach((t,i)=>{
+          const txnIdx = allTxns.length - txns.length + i;
+          html += '<div class="txn-row"><span class="tfrom">'+escapeHtml(memberName(t.from))+'</span>'+
+            '<span class="arrow">→</span><span class="tto">'+escapeHtml(memberName(t.to))+'</span>'+
+            '<span class="tamt mono">'+fmt(t.amount)+' '+cur+'</span>'+
+            '<button class="btn btn-ghost btn-sm js-mark-paid" data-idx="'+txnIdx+'" style="width:auto;margin-left:8px;">標記已還</button></div>';
+        });
+      } else {
+        html += '<div class="helper">這個幣別目前剛好打平，不用轉帳 🎉</div>';
+      }
+      html += '</div>';
+    });
+    if(allSettled){
+      html = '<div class="celebrate"><svg class="eemo-mascot-svg" data-mood="sparkle" style="width:64px;height:64px;vertical-align:middle;margin-right:6px;"></svg>尼尼看過了，帳都算得剛剛好！</div>' + html;
+    }
+    html += buildCategoryChartHTML();
+    if((data.settlements||[]).length){
+      html += '<div class="section-title" style="margin-top:18px;">已完成的還款</div>';
+      data.settlements.slice(0,20).forEach(s=>{
+        html += '<div class="txn-row" style="background:var(--green-soft);">'+
+          '<span class="tfrom">'+escapeHtml(memberName(s.from))+'</span><span class="arrow">→</span><span class="tto">'+escapeHtml(memberName(s.to))+'</span>'+
+          '<span class="tamt mono">'+fmt(s.amount)+' '+s.currency+'</span>'+
+          '<button class="btn btn-ghost btn-sm js-undo-settle" data-id="'+s.id+'" style="width:auto;margin-left:8px;">復原</button></div>';
+      });
+    }
+    html += '<button class="btn btn-blue" id="gen-line-btn">生成 LINE 結算文字</button>';
+    html += '<div id="line-output" style="display:none;"></div>';
+    html += '<button class="btn btn-ghost" id="copy-line-btn" style="display:none;margin-top:10px;">複製文字</button>';
+    box.innerHTML = html;
+    paintMascots();
+
+    box.querySelectorAll('.js-mark-paid').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const t = allTxns[Number(btn.dataset.idx)];
+        if(!t) return;
+        const ok = await confirmModal('標記這筆已還款？', memberName(t.from)+' 已經把 '+fmt(t.amount)+' '+t.currency+' 還給 '+memberName(t.to)+' 了嗎？標記後尼尼下次結算就不會再重複建議這筆。');
+        if(!ok) return;
+        await Store.addSettlement({ id: uid(), from: t.from, to: t.to, amount: t.amount, currency: t.currency, note: '', created_at: Date.now() });
+        showToast('尼尼記下來了，這筆不會再重複提醒 ✅');
+        renderSettlement();
+      });
+    });
+    box.querySelectorAll('.js-undo-settle').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const ok = await confirmModal('復原這筆還款紀錄？', '復原後，尼尼下次結算會重新把這筆算進建議還款裡。');
+        if(!ok) return;
+        await Store.deleteSettlement(btn.dataset.id);
+        showToast('已復原這筆還款紀錄');
+        renderSettlement();
+      });
+    });
+
+    document.getElementById('gen-line-btn').addEventListener('click', ()=>{
+      const text = buildLineSummary(balancesByCurrency);
+      const out = document.getElementById('line-output');
+      out.textContent = text; out.style.display = 'block';
+      document.getElementById('copy-line-btn').style.display = 'block';
+    });
+    document.getElementById('copy-line-btn').addEventListener('click', async ()=>{
+      const text = document.getElementById('line-output').textContent;
+      try{ await navigator.clipboard.writeText(text); showToast('已複製，貼到 LINE 就完成了 📋'); }
+      catch(e){ showToast('複製失敗，麻煩手動選取文字囉'); }
+    });
+  }
+
+  function buildLineSummary(balancesByCurrency){
+    let lines = ['🧳 這趟旅行的結算摘要',''];
+    Object.keys(balancesByCurrency).forEach(cur=>{
+      const balances = balancesByCurrency[cur];
+      const total = data.expenses.filter(e=>e.currency===cur).reduce((s,e)=>s+Number(e.amount||0),0);
+      lines.push('總支出（'+cur+'）：'+fmt(total));
+      Object.keys(balances).forEach(id=>{
+        const v = balances[id];
+        lines.push(memberName(id)+'：'+(v>=0?'+':'−')+fmt(Math.abs(v)));
+      });
+      const txns = simplifyDebts(balances);
+      if(txns.length){
+        lines.push(''); lines.push('建議還款：');
+        txns.forEach(t=> lines.push(memberName(t.from)+' → '+memberName(t.to)+' '+fmt(t.amount)+' '+cur));
+      }
+      lines.push('');
+    });
+    lines.push('— 尼尼管家公');
+    return lines.join('\n');
+  }
+
+  /* =====================================================
+     MEMBERS
+  ===================================================== */
+  function renderMembers(){
+    document.getElementById('members-sub').textContent = '共 '+data.members.length+' 人';
+    const box = document.getElementById('members-list');
+    if(data.members.length === 0){ box.innerHTML = emptyStateHTML('還沒有旅伴加入','按右上角的 ＋，邀第一位旅伴一起記帳吧'); paintMascots(); return; }
+    box.innerHTML = data.members.map(m=>
+      '<div class="member-row">'+
+        '<div class="member-avatar" style="background:'+avatarColor(m.id)+';">'+initials(m.name)+'</div>'+
+        '<div class="mname">'+escapeHtml(m.name)+(m.temporary?' <span class="badge badge-grey">臨時</span>':'')+'</div>'+
+        '<button class="btn btn-ghost btn-sm js-edit-member" data-id="'+m.id+'">改名</button>'+
+        '<button class="btn btn-danger-ghost btn-sm js-del-member" data-id="'+m.id+'">刪除</button>'+
+      '</div>'
+    ).join('');
+    box.querySelectorAll('.js-edit-member').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const m = data.members.find(x=>x.id===btn.dataset.id);
+        const name = prompt('新的名字？', m.name);
+        if(name && name.trim()){
+          m.name = name.trim(); saveLocalData();
+          if(isOnline()) apiCall('addMember', { member: m }).catch(()=>{});
+          renderMembers();
+          showToast('尼尼幫你改好名字了');
+        }
+      });
+    });
+    box.querySelectorAll('.js-del-member').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const used = data.expenses.some(e=> e.payer===btn.dataset.id || e.participants.includes(btn.dataset.id));
+        const msg = used ? '這位旅伴出現在既有支出中，刪除後帳本上仍保留紀錄但無法再選用他。' : '刪除後無法復原。';
+        const ok = await confirmModal('刪除這位旅伴？', msg);
+        if(ok){ await Store.deleteMember(btn.dataset.id); renderMembers(); showToast('已經把這位旅伴請出名單了'); }
+      });
+    });
+  }
+  document.getElementById('member-add-btn').addEventListener('click', ()=>{ quickAddMember(()=>renderMembers()); });
+
+  /* =====================================================
+     SETTINGS
+  ===================================================== */
+  function renderSettings(){
+    document.getElementById('set-nickname').value = config.nickname || '';
+    document.getElementById('set-apiurl').value = config.apiUrl || '';
+    document.getElementById('invite-output').style.display = 'none';
+    document.getElementById('copy-invite-btn').style.display = 'none';
+  }
+  document.getElementById('dash-settings').addEventListener('click', ()=> navigate('settings'));
+  document.getElementById('dash-sync-btn').addEventListener('click', syncNow);
+  document.getElementById('settings-back').addEventListener('click', ()=> navigate('dashboard'));
+  document.getElementById('set-save').addEventListener('click', async ()=>{
+    const newNickname = document.getElementById('set-nickname').value.trim() || config.nickname;
+    const nicknameChanged = newNickname !== config.nickname;
+    const wasOffline = !config.apiUrl;
+    config.nickname = newNickname;
+    config.apiUrl = document.getElementById('set-apiurl').value.trim() || null;
+    saveConfig();
+    if(nicknameChanged){
+      const selfId = getSelfId();
+      const me = data.members.find(m=>m.id===selfId);
+      if(me){ me.name = newNickname; saveLocalData(); if(isOnline()) { try{ await apiCall('addMember', { member: me }); }catch(e){} } }
+    }
+    showToast('尼尼記住了，設定已儲存 ✅');
+    navigate('dashboard');
+    if(wasOffline && config.apiUrl){
+      await pushAllLocalData();
+      await syncNow();
+    }
+  });
+  document.getElementById('set-reset').addEventListener('click', async ()=>{
+    const ok = await confirmModal('清除所有資料？', '這會刪除這台裝置上的設定與離線資料，且無法復原，尼尼會忘記這一切喔。');
+    if(ok){ localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_DATA_KEY); location.reload(); }
+  });
+  document.getElementById('settle-refresh').addEventListener('click', syncNow);
+
+  function buildInviteText(){
+    const appUrl = location.href.split('?')[0].split('#')[0];
+    const link = config.apiUrl ? (appUrl + '?api=' + encodeURIComponent(config.apiUrl)) : appUrl;
+    return [
+      '🐾 一起用「尼尼管家公」記帳吧！',
+      '',
+      '1️⃣ 點開這個連結：'+link,
+      '2️⃣ 輸入你的名字，就可以開始記帳',
+      '3️⃣ 大家記的帳都會同步進同一本 Google Sheet，尼尼會自動幫忙算好誰欠誰多少',
+      '',
+      '— 尼尼管家公 汪！'
+    ].join('\n');
+  }
+  document.getElementById('gen-invite-btn').addEventListener('click', ()=>{
+    if(!config.apiUrl){ showToast('要先貼上「記帳 API 網址」並儲存，尼尼才能生成邀請連結喔'); return; }
+    const text = buildInviteText();
+    const out = document.getElementById('invite-output');
+    out.textContent = text;
+    out.style.display = 'block';
+    document.getElementById('copy-invite-btn').style.display = 'block';
+  });
+  document.getElementById('copy-invite-btn').addEventListener('click', async ()=>{
+    const text = document.getElementById('invite-output').textContent;
+    try{ await navigator.clipboard.writeText(text); showToast('已複製，貼給旅伴就能揪團了 🐾'); }
+    catch(e){ showToast('複製失敗，請手動選取文字'); }
+  });
+
+  /* =====================================================
+     BOOT
+  ===================================================== */
+  function setupInviteLink(){
+    const invited = new URLSearchParams(location.search).get('api');
+    if(!invited) return;
+    const field = document.getElementById('init-apiurl');
+    if(field){
+      field.value = invited;
+      const wrap = field.closest('.field');
+      if(wrap) wrap.style.display = 'none';
+    }
+    const tagline = document.querySelector('#view-init .tagline');
+    if(tagline) tagline.textContent = '旅伴邀請你一起記帳，輸入你的名字就能加入這本帳！';
+  }
+  async function boot(){
+    hydrateIcons();
+    paintMascots();
+    setupInviteLink();
+    if(!config || !config.nickname){ navigate('init'); return; }
+    await Store.getMembers();
+    await Store.getExpenses();
+    await Store.getSettlements();
+    navigate('dashboard');
+    setupAutoSync();
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

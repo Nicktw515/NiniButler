@@ -1,0 +1,55 @@
+<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+
+    <defs>
+      <radialGradient id="cheekBlush" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#FFB4A6" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#FFB4A6" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="120" cy="222" rx="58" ry="9" fill="#14161A" opacity="0.08"/>
+    <path d="M186 168 C 214 158, 222 130, 206 108 C 224 122, 226 156, 200 178 C 195 182, 188 178, 186 168 Z" fill="#26262B"/>
+    <path d="M196 122 C 206 132, 208 150, 196 164" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.85"/>
+    <ellipse cx="78" cy="214" rx="17" ry="12" fill="#FFFFFF" stroke="#D6DAE4" stroke-width="2"/>
+    <ellipse cx="164" cy="214" rx="17" ry="12" fill="#FFFFFF" stroke="#D6DAE4" stroke-width="2"/>
+    <ellipse cx="120" cy="192" rx="66" ry="46" fill="#26262B"/>
+    <ellipse cx="120" cy="196" rx="66" ry="34" fill="#1B1B1F"/>
+    <ellipse cx="120" cy="200" rx="40" ry="26" fill="#FFFFFF"/>
+    <path d="M84 168 C 104 184, 136 184, 156 168 L 148 156 C 130 168, 110 168, 92 156 Z" fill="#2E5CF0"/>
+    <path d="M112 175 L 120 194 L 130 173 C 124 178, 116 178, 112 175 Z" fill="#2E5CF0"/>
+    <circle cx="120" cy="177" r="9.5" fill="#F2F4F8" stroke="#B9C0CC" stroke-width="1.5"/>
+    <circle cx="120" cy="180" r="2.8" fill="#8B93A3"/>
+    <circle cx="114.5" cy="173" r="1.6" fill="#8B93A3"/>
+    <circle cx="118" cy="170.2" r="1.6" fill="#8B93A3"/>
+    <circle cx="122" cy="170.2" r="1.6" fill="#8B93A3"/>
+    <circle cx="125.5" cy="173" r="1.6" fill="#8B93A3"/>
+    <ellipse cx="94" cy="216" rx="16" ry="11" fill="#FFFFFF" stroke="#E3E5EA" stroke-width="2"/>
+    <ellipse cx="148" cy="216" rx="16" ry="11" fill="#FFFFFF" stroke="#E3E5EA" stroke-width="2"/>
+    <path d="M58 82 C 46 46, 74 22, 98 52 C 92 70, 80 86, 66 94 Z" fill="#26262B"/>
+    <path d="M65 78 C 58 54, 75 40, 88 60 C 83 72, 74 80, 68 84 Z" fill="#F3C9CE"/>
+    <path d="M182 82 C 194 46, 166 22, 142 52 C 148 70, 160 86, 174 94 Z" fill="#26262B"/>
+    <path d="M175 78 C 182 54, 165 40, 152 60 C 157 72, 166 80, 172 84 Z" fill="#F3C9CE"/>
+    <path d="M120 44 C 116 36, 118 28, 124 24 C 121 32, 122 38, 126 44 Z" fill="#26262B"/>
+    <circle cx="120" cy="118" r="72" fill="#26262B"/>
+    <ellipse cx="66" cy="140" rx="26" ry="22" fill="#26262B"/>
+    <ellipse cx="174" cy="140" rx="26" ry="22" fill="#26262B"/>
+    <path d="M120 78 C 152 78, 172 104, 168 138 C 165 166, 146 186, 120 186 C 94 186, 75 166, 72 138 C 68 104, 88 78, 120 78 Z" fill="#FFFFFF"/>
+    <path d="M120 66 C 138 66, 150 82, 148 100 C 138 92, 128 88, 120 88 C 112 88, 102 92, 92 100 C 90 82, 102 66, 120 66 Z" fill="#26262B"/>
+    <ellipse cx="80" cy="158" rx="16" ry="10" fill="url(#cheekBlush)"/>
+    <ellipse cx="160" cy="158" rx="16" ry="10" fill="url(#cheekBlush)"/>
+    <path d="M92 104 C 98 98, 108 98, 113 103" stroke="#6B7280" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M148 104 C 142 98, 132 98, 127 103" stroke="#6B7280" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <circle cx="98" cy="122" r="13" fill="#FFFFFF"/>
+    <circle cx="142" cy="122" r="13" fill="#FFFFFF"/>
+    <circle cx="99" cy="123" r="9.5" fill="#5AC8E8"/>
+    <circle cx="141" cy="123" r="9.5" fill="#5AC8E8"/>
+    <circle cx="99" cy="123" r="5" fill="#14161A"/>
+    <circle cx="141" cy="123" r="5" fill="#14161A"/>
+    <circle cx="102" cy="119" r="2.4" fill="#FFFFFF"/>
+    <circle cx="144" cy="119" r="2.4" fill="#FFFFFF"/>
+    <path d="M120 140 C 126 140, 130 144, 128 149 C 126 154, 114 154, 112 149 C 110 144, 114 140, 120 140 Z" fill="#14161A"/>
+    <path d="M120 152 L 120 160" stroke="#14161A" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M120 160 C 112 168, 100 166, 96 158" stroke="#14161A" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M120 160 C 128 168, 140 166, 144 158" stroke="#14161A" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M114 162 C 114 172, 126 172, 126 162 C 126 168, 114 168, 114 162 Z" fill="#FF9AA6"/>
+  
+</svg>
