@@ -146,10 +146,10 @@
     position:relative;overflow:hidden;
   }
   .hero-total .paw-deco{position:absolute;right:-10px;bottom:-14px;width:92px;height:92px;opacity:0.16;}
-  .hero-stats{display:flex;gap:18px;position:relative;z-index:1;}
-  .hero-stats .hstat{flex:1;min-width:0;}
+  .hero-stats{display:flex;flex-wrap:wrap;gap:14px 18px;position:relative;z-index:1;}
+  .hero-stats .hstat{flex:1 1 40%;min-width:112px;}
   .hero-stats .hlabel{font-size:12px;color:rgba(255,255,255,0.72);font-weight:700;margin-bottom:6px;}
-  .hero-stats .hvalue{font-family:var(--font-mono);font-size:24px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;word-break:break-word;}
+  .hero-stats .hvalue{font-family:var(--font-mono);font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;word-break:break-word;}
   .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
   .quick-card{
     background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-lg);padding:15px;
@@ -303,14 +303,7 @@
   .status-banner{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:var(--radius-md);font-size:13.5px;font-weight:700;margin-bottom:14px;}
   .status-banner.pending{background:var(--yellow-soft);color:#8A6A1E;}
   .status-banner.clear{background:var(--green-soft);color:var(--green);}
-  .txn-row{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--surface);border-radius:var(--radius-md);margin-bottom:8px;}
-  .txn-row .savatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex-shrink:0;}
-  .txn-row .tfrom{font-weight:700;}
-  .txn-row .arrow{color:var(--ink-faint);}
-  .txn-row .tto{font-weight:700;}
-  .txn-row .tamt{margin-left:auto;font-family:var(--font-mono);font-weight:700;color:var(--blue-ink);}
   .currency-block{margin-bottom:22px;}
-  .donut{width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
   .summary-cell{background:var(--surface);border-radius:var(--radius-md);padding:14px;}
   .summary-cell .slabel{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-bottom:4px;}
@@ -320,9 +313,6 @@
   .bar-chart-row .btrack{flex:1;background:var(--surface-2);border-radius:6px;height:14px;overflow:hidden;}
   .bar-chart-row .bfill{height:100%;border-radius:6px;transition:width .3s ease;}
   .bar-chart-row .bval{width:68px;text-align:right;font-family:var(--font-mono);font-size:11.5px;flex-shrink:0;}
-  .donut-hole{width:52px;height:52px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--ink-soft);}
-  .cat-legend-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:4px 0;}
-  .cat-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
   .currency-tag{display:inline-block;font-family:var(--font-mono);font-size:12px;font-weight:700;background:var(--surface-2);padding:4px 11px;border-radius:8px;margin-bottom:10px;}
   #line-output, .text-output-box{white-space:pre-wrap;word-break:break-all;overflow-wrap:break-word;font-family:var(--font-mono);font-size:13px;line-height:1.7;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-md);padding:16px;margin-top:14px;}
   .celebrate{text-align:center;padding:8px 0 4px;font-size:13px;color:var(--green);font-weight:700;}
@@ -380,7 +370,7 @@
       --yellow-soft:#3A3320;
     }
     body{background:#0F1013;}
-    .swipe-front, .expense-card, .card, .modal-sheet, input, select, textarea, .date-chip, .donut-hole, .quick-card, .txn-row, .summary-cell{background:var(--surface);color:var(--ink);}
+    .swipe-front, .expense-card, .card, .modal-sheet, input, select, textarea, .date-chip, .quick-card, .status-card.even, .summary-cell{background:var(--surface);color:var(--ink);}
     .bottomnav{background:rgba(22,24,29,0.9);}
     .icon-btn{background:var(--surface);border-color:var(--line);}
   }
@@ -433,16 +423,7 @@
     <div class="content">
       <div class="hero-total">
         <svg class="paw-deco" viewBox="0 0 100 100" fill="#fff"><circle cx="30" cy="35" r="12"/><circle cx="55" cy="25" r="10"/><circle cx="75" cy="40" r="9"/><ellipse cx="50" cy="62" rx="22" ry="18"/></svg>
-        <div class="hero-stats">
-          <div class="hstat">
-            <div class="hlabel">總支出</div>
-            <div class="hvalue" id="hero-amount">0</div>
-          </div>
-          <div class="hstat">
-            <div class="hlabel">支出筆數</div>
-            <div class="hvalue" id="hero-count">0 筆</div>
-          </div>
-        </div>
+        <div class="hero-stats" id="hero-stats"></div>
       </div>
       <div class="quick-actions">
         <div class="quick-card" data-nav="wizard">
@@ -539,8 +520,6 @@
           <div class="helper">存一份 CSV 在手機或電腦裡，用 Excel、Numbers、Google 試算表都能打開</div>
           <div class="stack" style="gap:8px;">
             <button class="btn btn-ghost" id="export-expenses-btn">📒 匯出帳本 CSV</button>
-            <button class="btn btn-ghost" id="export-members-btn">👥 匯出旅伴名單 CSV</button>
-            <button class="btn btn-ghost" id="export-settlements-btn">✅ 匯出還款紀錄 CSV</button>
           </div>
         </div>
 
@@ -1189,14 +1168,15 @@
     const totalsByCurrency = {};
     data.expenses.forEach(e=>{ totalsByCurrency[e.currency] = (totalsByCurrency[e.currency]||0) + (Number(e.amount)||0); });
     const currencies = Object.keys(totalsByCurrency).sort((a,b)=> totalsByCurrency[b]-totalsByCurrency[a]);
-    const heroAmount = document.getElementById('hero-amount');
+    let statsHTML = '<div class="hstat"><div class="hlabel">支出筆數</div><div class="hvalue">'+data.expenses.length+' 筆</div></div>';
     if(currencies.length === 0){
-      heroAmount.textContent = '0';
+      statsHTML += '<div class="hstat"><div class="hlabel">總支出</div><div class="hvalue">0</div></div>';
     } else {
-      heroAmount.textContent = fmt(totalsByCurrency[currencies[0]]) + ' ' + currencies[0];
-      if(currencies.length > 1) heroAmount.textContent += '　+' + (currencies.length-1) + ' 種幣別';
+      currencies.forEach(cur=>{
+        statsHTML += '<div class="hstat"><div class="hlabel">總支出（'+cur+'）</div><div class="hvalue">'+fmt(totalsByCurrency[cur])+'</div></div>';
+      });
     }
-    document.getElementById('hero-count').textContent = data.expenses.length + ' 筆';
+    document.getElementById('hero-stats').innerHTML = statsHTML;
 
     const recent = data.expenses.slice(0,5);
     const box = document.getElementById('dash-recent');
@@ -1772,69 +1752,6 @@
     return result;
   }
 
-  function simplifyDebts(balanceMap){
-    const creditors = [], debtors = [];
-    Object.keys(balanceMap).forEach(id=>{
-      const v = balanceMap[id];
-      if(v > 0.01) creditors.push({ id, v });
-      else if(v < -0.01) debtors.push({ id, v: -v });
-    });
-    creditors.sort((a,b)=>b.v-a.v);
-    debtors.sort((a,b)=>b.v-a.v);
-    const txns = [];
-    let i=0, j=0;
-    while(i < debtors.length && j < creditors.length){
-      const pay = Math.min(debtors[i].v, creditors[j].v);
-      txns.push({ from: debtors[i].id, to: creditors[j].id, amount: pay });
-      debtors[i].v -= pay; creditors[j].v -= pay;
-      if(debtors[i].v < 0.01) i++;
-      if(creditors[j].v < 0.01) j++;
-    }
-    return txns;
-  }
-
-  function computeCategoryTotals(){
-    const result = {};
-    data.expenses.forEach(e=>{
-      const cur = e.currency || 'TWD';
-      const cat = e.category || 'other';
-      if(!result[cur]) result[cur] = {};
-      result[cur][cat] = (result[cur][cat]||0) + (Number(e.amount)||0);
-    });
-    return result;
-  }
-
-  function buildCategoryChartHTML(){
-    const totalsByCurrency = computeCategoryTotals();
-    const currencies = Object.keys(totalsByCurrency);
-    if(currencies.length === 0) return '';
-    let html = '';
-    let any = false;
-    currencies.forEach(cur=>{
-      const totals = totalsByCurrency[cur];
-      const cats = Object.keys(totals).filter(k=>totals[k]>0);
-      if(cats.length < 2) return; // 只有一種分類時畫圖沒有意義，略過
-      any = true;
-      const grandTotal = cats.reduce((s,k)=>s+totals[k],0);
-      let acc = 0;
-      const stops = cats.map(k=>{
-        const c = categoryOf(k);
-        const pct = totals[k]/grandTotal*100;
-        const start = acc; acc += pct;
-        return c.color+' '+start.toFixed(2)+'% '+acc.toFixed(2)+'%';
-      }).join(', ');
-      html += '<div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:16px;">';
-      html += '<div class="donut" style="background:conic-gradient('+stops+');"><div class="donut-hole">'+cur+'</div></div>';
-      html += '<div style="flex:1;min-width:0;">'+cats.sort((a,b)=>totals[b]-totals[a]).map(k=>{
-        const c = categoryOf(k);
-        return '<div class="cat-legend-row"><span class="cat-dot" style="background:'+c.color+';"></span>'+c.emoji+' '+c.label+
-          '<span class="mono" style="margin-left:auto;">'+fmt(totals[k])+'</span></div>';
-      }).join('')+'</div>';
-      html += '</div>';
-    });
-    return any ? ('<div class="section-title" style="margin-top:18px;">支出分類</div>' + html) : '';
-  }
-
   function buildTripSummaryHTML(){
     const totalsByCurrency = {};
     data.expenses.forEach(e=>{ totalsByCurrency[e.currency] = (totalsByCurrency[e.currency]||0) + (Number(e.amount)||0); });
@@ -1880,14 +1797,9 @@
     const balancesByCurrency = computeBalancesByCurrency();
     let html = buildTripSummaryHTML();
     let allSettled = true;
-    let pendingCount = 0;
-    const allTxns = []; // 攤平存起來給「標記已還款」按鈕跟 LINE 摘要共用
+    let pendingPeople = 0;
     Object.keys(balancesByCurrency).forEach(cur=>{
       const balances = balancesByCurrency[cur];
-      const txns = simplifyDebts(balances);
-      if(txns.length) allSettled = false;
-      pendingCount += txns.length;
-      txns.forEach(t=> allTxns.push(Object.assign({currency:cur}, t)));
       const total = data.expenses.filter(e=>e.currency===cur).reduce((s,e)=>s+Number(e.amount||0),0);
       html += '<div class="currency-block">';
       html += '<div class="currency-tag">'+cur+'</div>';
@@ -1897,75 +1809,28 @@
         const v = balances[id];
         const color = avatarColor(id);
         const cls = v > 0.01 ? 'owed' : (v < -0.01 ? 'owes' : 'even');
+        if(cls !== 'even'){ allSettled = false; pendingPeople++; }
         const sentence = v > 0.01
           ? '可以收回 <b>'+fmt(v)+' '+cur+'</b>'
           : (v < -0.01 ? '還要付 <b>'+fmt(-v)+' '+cur+'</b>' : '已經打平了 🎉');
         html += '<div class="status-card '+cls+'"><div class="savatar" style="background:'+color+'22;color:'+color+';">'+initials(memberName(id))+'</div>'+
           '<div class="stext"><b>'+escapeHtml(memberName(id))+'</b> '+sentence+'</div></div>';
       });
-      html += '</div>';
-      if(txns.length){
-        html += '<div class="section-title">建議還款</div>';
-        txns.forEach((t,i)=>{
-          const txnIdx = allTxns.length - txns.length + i;
-          html += '<div class="txn-row">'+
-            '<div class="savatar" style="background:'+avatarColor(t.from)+'22;color:'+avatarColor(t.from)+';">'+initials(memberName(t.from))+'</div>'+
-            '<span class="tfrom">'+escapeHtml(memberName(t.from))+'</span>'+
-            '<span class="arrow">→</span>'+
-            '<div class="savatar" style="background:'+avatarColor(t.to)+'22;color:'+avatarColor(t.to)+';">'+initials(memberName(t.to))+'</div>'+
-            '<span class="tto">'+escapeHtml(memberName(t.to))+'</span>'+
-            '<span class="tamt mono">'+fmt(t.amount)+' '+cur+'</span>'+
-            '<button class="btn btn-ghost btn-sm js-mark-paid" data-idx="'+txnIdx+'" style="width:auto;margin-left:8px;">標記已還</button></div>';
-        });
-      } else {
-        html += '<div class="helper">這個幣別目前剛好打平，不用轉帳 🎉</div>';
-      }
-      html += '</div>';
+      html += '</div></div>';
     });
     const banner = allSettled
       ? '<div class="status-banner clear">🎉 全部結清，沒有人欠誰</div>'
-      : '<div class="status-banner pending">💸 還有 '+pendingCount+' 筆待處理的還款</div>';
+      : '<div class="status-banner pending">💸 還有 '+pendingPeople+' 人款項尚未結清</div>';
     html = banner + html;
     if(allSettled){
       html = '<div class="celebrate"><svg class="eemo-mascot-svg" data-mood="sparkle" style="width:64px;height:64px;vertical-align:middle;margin-right:6px;"></svg>尼尼看過了，帳都算得剛剛好！</div>' + html;
     }
     html += buildPaidVsOwedHTML();
-    html += buildCategoryChartHTML();
-    if((data.settlements||[]).length){
-      html += '<div class="section-title" style="margin-top:18px;">已完成的還款</div>';
-      data.settlements.slice(0,20).forEach(s=>{
-        html += '<div class="txn-row" style="background:var(--green-soft);">'+
-          '<span class="tfrom">'+escapeHtml(memberName(s.from))+'</span><span class="arrow">→</span><span class="tto">'+escapeHtml(memberName(s.to))+'</span>'+
-          '<span class="tamt mono">'+fmt(s.amount)+' '+s.currency+'</span>'+
-          '<button class="btn btn-ghost btn-sm js-undo-settle" data-id="'+s.id+'" style="width:auto;margin-left:8px;">復原</button></div>';
-      });
-    }
     html += '<button class="btn btn-blue" id="gen-line-btn">生成 LINE 結算文字</button>';
     html += '<div id="line-output" style="display:none;"></div>';
     html += '<button class="btn btn-ghost" id="copy-line-btn" style="display:none;margin-top:10px;">複製文字</button>';
     box.innerHTML = html;
     paintMascots();
-
-    box.querySelectorAll('.js-mark-paid').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const t = allTxns[Number(btn.dataset.idx)];
-        if(!t) return;
-        const ok = await confirmModal('標記這筆已還款？', memberName(t.from)+' 已經把 '+fmt(t.amount)+' '+t.currency+' 還給 '+memberName(t.to)+' 了嗎？標記後尼尼下次結算就不會再重複建議這筆。');
-        if(!ok) return;
-        await Store.addSettlement({ id: uid(), from: t.from, to: t.to, amount: t.amount, currency: t.currency, note: '', created_at: Date.now() });
-        showToast('尼尼記下來了，這筆不會再重複提醒 ✅');
-        renderSettlement();
-      });
-    });
-    box.querySelectorAll('.js-undo-settle').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const ok = await confirmModal('復原這筆還款紀錄？', '復原後，尼尼下次結算會重新把這筆算進建議還款裡。');
-        if(!ok) return;
-        await Store.deleteSettlement(btn.dataset.id);
-        showToast('已復原這筆還款紀錄');
-        renderSettlement();
-      });
-    });
 
     document.getElementById('gen-line-btn').addEventListener('click', ()=>{
       const text = buildLineSummary(balancesByCurrency);
@@ -1990,11 +1855,6 @@
         const v = balances[id];
         lines.push(memberName(id)+'：'+(v>=0?'+':'−')+fmt(Math.abs(v)));
       });
-      const txns = simplifyDebts(balances);
-      if(txns.length){
-        lines.push(''); lines.push('建議還款：');
-        txns.forEach(t=> lines.push(memberName(t.from)+' → '+memberName(t.to)+' '+fmt(t.amount)+' '+cur));
-      }
       lines.push('');
     });
     lines.push('— 尼尼管家公');
@@ -2158,23 +2018,7 @@
     });
     downloadCSV('尼尼管家公_帳本_'+todayStr()+'.csv', rows);
   }
-  function exportMembersCSV(){
-    if(data.members.length === 0){ showToast('目前還沒有旅伴可以匯出喔'); return; }
-    const rows = [['姓名','臨時旅伴']];
-    data.members.forEach(m=> rows.push([m.name, m.temporary ? '是' : '否']));
-    downloadCSV('尼尼管家公_旅伴名單_'+todayStr()+'.csv', rows);
-  }
-  function exportSettlementsCSV(){
-    if((data.settlements||[]).length === 0){ showToast('目前還沒有還款紀錄可以匯出喔'); return; }
-    const rows = [['還款日期','還款人','收款人','金額','幣別','備註']];
-    data.settlements.slice().sort((a,b)=>(a.created_at||0)-(b.created_at||0)).forEach(s=>{
-      rows.push([new Date(s.created_at).toLocaleString('zh-TW'), memberName(s.from), memberName(s.to), s.amount, s.currency, s.note || '']);
-    });
-    downloadCSV('尼尼管家公_還款紀錄_'+todayStr()+'.csv', rows);
-  }
   document.getElementById('export-expenses-btn').addEventListener('click', exportExpensesCSV);
-  document.getElementById('export-members-btn').addEventListener('click', exportMembersCSV);
-  document.getElementById('export-settlements-btn').addEventListener('click', exportSettlementsCSV);
 
   /* =====================================================
      BOOT
