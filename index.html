@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>尼尼管家公｜旅行記帳分帳</title>
+<title>小秘書尼尼｜旅行記帳</title>
 <meta name="theme-color" content="#2451E0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="尼尼管家公">
+<meta name="apple-mobile-web-app-title" content="小秘書尼尼">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-512.png">
@@ -237,6 +237,17 @@
   .split-sum-note.ok{background:var(--green-soft);color:var(--green);}
   .split-sum-note.err{background:var(--red-soft);color:var(--red);}
   .split-sum-note.info{background:var(--blue-soft);color:var(--blue-ink);}
+  .ratio-bar{position:relative;display:flex;height:52px;border-radius:14px;overflow:hidden;margin-bottom:6px;}
+  .ratio-seg{height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;font-family:var(--font-mono);white-space:nowrap;overflow:hidden;}
+  .ratio-handle{position:absolute;top:0;bottom:0;width:28px;margin-left:-14px;display:flex;align-items:center;justify-content:center;cursor:ew-resize;touch-action:none;z-index:5;}
+  .ratio-handle::after{content:"";width:4px;height:26px;border-radius:99px;background:rgba(255,255,255,0.9);box-shadow:0 0 0 1px rgba(20,22,26,0.12);}
+  .ratio-list-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px dashed var(--line);}
+  .ratio-list-row:first-child{border-top:none;}
+  .ratio-list-row .rl-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+  .ratio-list-row .rl-name{flex:1;font-weight:700;font-size:14.5px;}
+  .ratio-list-row .rl-pct{font-family:var(--font-mono);font-weight:800;font-size:14px;min-width:46px;text-align:right;}
+  .ratio-list-row .rl-amt{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-soft);min-width:72px;text-align:right;}
+  .ratio-hint{font-size:12px;color:var(--ink-faint);margin-bottom:14px;}
 
   .wizard-footer{padding:14px 20px calc(20px + var(--safe-bottom));display:flex;gap:10px;border-top:1.5px solid var(--line);position:sticky;bottom:0;background:#fff;}
   .wizard-footer .btn-ghost{flex:0 0 84px;}
@@ -293,16 +304,20 @@
   .empty-state .etitle{font-weight:700;color:var(--ink);margin-bottom:4px;font-size:15px;}
 
   /* ---------- Settlement ---------- */
-  .status-card{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:var(--radius-md);margin-bottom:8px;}
-  .status-card.owed{background:var(--green-soft);}
-  .status-card.owes{background:var(--red-soft);}
-  .status-card.even{background:var(--surface);}
-  .status-card .savatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;}
-  .status-card .stext{flex:1;font-size:13.5px;line-height:1.4;}
-  .status-card .stext b{font-weight:800;}
-  .status-banner{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:var(--radius-md);font-size:13.5px;font-weight:700;margin-bottom:14px;}
-  .status-banner.pending{background:var(--yellow-soft);color:#8A6A1E;}
-  .status-banner.clear{background:var(--green-soft);color:var(--green);}
+  .savatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;}
+  .txn-row{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--surface);border-radius:var(--radius-md);margin-bottom:8px;}
+  .txn-row .tfrom{font-weight:700;}
+  .txn-row .arrow{color:var(--ink-faint);}
+  .txn-row .tto{font-weight:700;}
+  .txn-row .tamt{margin-left:auto;font-family:var(--font-mono);font-weight:700;color:var(--blue-ink);}
+  .advance-bar{display:flex;height:20px;border-radius:8px;overflow:hidden;background:var(--surface-2);margin-bottom:8px;}
+  .advance-seg.collected{background:var(--green);}
+  .advance-seg.outstanding{background:#E0A62E;}
+  .advance-seg.empty{background:var(--surface-2);}
+  .advance-legend{display:flex;gap:16px;font-size:12px;color:var(--ink-soft);}
+  .advance-legend .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+  .advance-legend .dot.collected{background:var(--green);}
+  .advance-legend .dot.outstanding{background:#E0A62E;}
   .currency-block{margin-bottom:22px;}
   .summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
   .summary-cell{background:var(--surface);border-radius:var(--radius-md);padding:14px;}
@@ -370,7 +385,7 @@
       --yellow-soft:#3A3320;
     }
     body{background:#0F1013;}
-    .swipe-front, .expense-card, .card, .modal-sheet, input, select, textarea, .date-chip, .quick-card, .status-card.even, .summary-cell{background:var(--surface);color:var(--ink);}
+    .swipe-front, .expense-card, .card, .modal-sheet, input, select, textarea, .date-chip, .quick-card, .summary-cell, .txn-row{background:var(--surface);color:var(--ink);}
     .bottomnav{background:rgba(22,24,29,0.9);}
     .icon-btn{background:var(--surface);border-color:var(--line);}
   }
@@ -383,13 +398,13 @@
   <section class="view" id="view-init">
     <div class="content">
       <svg class="init-mascot" id="mascot-init"></svg>
-      <h1>嗨，我是尼尼！</h1>
-      <div class="tagline">你的旅行記帳管家，貼上網址讓我認出你是誰</div>
+      <h1>嗨，我是尼尼</h1>
+      <div class="tagline">旅行中的帳，交給尼尼打理。</div>
       <div class="stack">
         <div class="field">
           <label>記帳 API 網址（選填）</label>
           <input type="url" id="init-apiurl" placeholder="貼上 Apps Script 網頁應用程式網址">
-          <div class="helper" id="init-apiurl-helper">沒有的話尼尼會先幫你離線記帳，之後再到「設定」補上就好，資料先存在這台裝置裡。設定方法請看下方「怎麼取得網址」。</div>
+          <div class="helper" id="init-apiurl-helper">還沒有網址也沒關係，尼尼會先把帳記在這台裝置裡，之後到「設定」補上即可。取得網址的方法請看下方說明。</div>
         </div>
         <div class="field" id="init-who-field" style="display:none;">
           <label>你是哪一位旅伴？</label>
@@ -399,7 +414,7 @@
           <label>你的名字</label>
           <input type="text" id="init-nickname" placeholder="例如：Nick">
         </div>
-        <button class="btn btn-primary" id="init-start" style="margin-top:6px;">讓尼尼開始幫我記帳</button>
+        <button class="btn btn-primary" id="init-start" style="margin-top:6px;">交給尼尼開始記帳</button>
         <button class="link-btn" id="init-howto">怎麼取得記帳網址？</button>
       </div>
     </div>
@@ -411,7 +426,7 @@
       <div style="display:flex;align-items:center;gap:10px;">
         <svg class="logo-mascot" id="mascot-header"></svg>
         <div>
-          <h1 id="dash-title">尼尼管家公</h1>
+          <h1 id="dash-title">小秘書尼尼</h1>
           <div class="sub"><span class="sync-dot off" id="sync-dot"></span><span id="sync-label">離線模式</span></div>
         </div>
       </div>
@@ -435,7 +450,7 @@
           <div class="qlabel">查看總覽</div>
         </div>
       </div>
-      <div class="section-title">尼尼記的最近帳目</div>
+      <div class="section-title">最近的帳目</div>
       <div id="dash-recent"></div>
     </div>
   </section>
@@ -814,12 +829,12 @@
   // 把離線期間累積的本機資料，第一次連上 API 網址時整批推上 Google Sheet
   async function pushAllLocalData(){
     if(!isOnline()) return;
-    showToast('尼尼正在把之前離線記的帳，一次補進 Google Sheet…');
+    showToast('尼尼正在把之前記的帳，一次補進 Google Sheet…');
     try{
       for(const m of data.members) await apiCall("addMember", { member: m });
       for(const s of data.settlements.slice().reverse()) await apiCall("addSettlement", { settlement: s });
       for(const ex of data.expenses.slice().reverse()) await apiCall("addExpense", { expense: ex });
-      showToast('✅ 離線記的帳都補進 Google Sheet 了');
+      showToast('尼尼把之前記的帳都補進 Google Sheet 了。');
     }catch(e){
       notifySyncFailure(e);
     }
@@ -829,7 +844,7 @@
   function notifySyncFailure(err){
     console.warn('sync failed', err);
     lastSyncError = (err && err.message) ? err.message : String(err);
-    showToast('⚠️ 尼尼同步失敗了，這筆先幫你存在裝置上，等等可以按右上角重新同步一次', { duration: 4200 });
+    showToast('尼尼暫時同步不了，這筆先幫你存在裝置上，等等可以按右上角重試。', { duration: 4200 });
     const dot = document.getElementById('sync-dot');
     const label = document.getElementById('sync-label');
     if(dot){ dot.className = 'sync-dot off'; }
@@ -837,14 +852,14 @@
   }
   async function syncNow(silent){
     const isSilent = silent === true;
-    if(!isOnline()){ if(!isSilent) showToast('目前是離線模式，先到「設定」貼上記帳 API 網址才能同步喔'); return; }
+    if(!isOnline()){ if(!isSilent) showToast('目前是離線模式，先到「設定」貼上網址，尼尼才能幫你同步。'); return; }
     const btn = document.getElementById('dash-sync-btn');
     if(btn) btn.classList.add('spinning');
-    if(!isSilent) showToast('尼尼正在幫你跟 Google Sheet 對一下帳…');
+    if(!isSilent) showToast('尼尼正在跟 Google Sheet 對一下帳…');
     lastSyncError = null;
     await Store.getAll();
     if(btn) btn.classList.remove('spinning');
-    if(!lastSyncError && !isSilent){ showToast('✅ 同步完成，最新帳目都拿回來了'); }
+    if(!lastSyncError && !isSilent){ showToast('尼尼剛剛把最新帳本整理好了。'); }
     if(uiState.currentView === 'dashboard') renderDashboard();
     if(uiState.currentView === 'ledger') renderLedger();
     if(uiState.currentView === 'settlement') renderSettlement();
@@ -943,8 +958,8 @@
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function greetingFor(name){
     const h = new Date().getHours();
-    const part = h < 5 ? '這麼晚還沒睡呀' : h < 11 ? '早安' : h < 18 ? '午安' : '晚安';
-    return (name ? part+'，'+name : '嗨，歡迎回來') + '！';
+    const part = h < 5 ? '夜深了' : h < 11 ? '早安' : h < 18 ? '午安' : '晚安';
+    return name ? part+'，'+name : '歡迎回來';
   }
 
   /* =====================================================
@@ -1084,18 +1099,18 @@
     const helper = document.getElementById('init-apiurl-helper');
     if(!url){
       whoField.style.display = 'none'; nameField.style.display = 'block'; initKnownMembers = null;
-      helper.textContent = '沒有的話尼尼會先幫你離線記帳，之後再到「設定」補上就好，資料先存在這台裝置裡。設定方法請看下方「怎麼取得網址」。';
+      helper.textContent = '還沒有網址也沒關係，尼尼會先把帳記在這台裝置裡，之後到「設定」補上即可。取得網址的方法請看下方說明。';
       return;
     }
-    helper.textContent = '尼尼正在查這本帳裡有哪些旅伴…';
+    helper.textContent = '尼尼正在確認這本帳的旅伴名單…';
     const members = await fetchMembersFrom(url);
     initKnownMembers = members;
     if(members === null){
-      helper.textContent = '抓不到旅伴名單，可能是網址還沒部署好；還是可以直接輸入名字先離線記帳，之後再到設定重新連接。';
+      helper.textContent = '尼尼暫時聯絡不上這個網址，可以先直接輸入名字，之後再到「設定」重新連接。';
       whoField.style.display = 'none'; nameField.style.display = 'block';
       return;
     }
-    helper.textContent = members.length ? '找到這本帳的旅伴名單了，選一下你是誰吧！' : '這本帳目前還沒有旅伴，你會是第一位！';
+    helper.textContent = members.length ? '尼尼找到旅伴名單了，選一下你是誰。' : '這本帳目前還沒有人，你是第一位。';
     select.innerHTML = '<option value="">請選擇...</option>' +
       members.map(m=>'<option value="'+m.id+'">'+escapeHtml(m.name)+'</option>').join('') +
       '<option value="__new__">➕ 我是新旅伴</option>';
@@ -1127,7 +1142,7 @@
     }
     if(!nickname){ showToast('尼尼需要知道你的名字才能開始記帳'); return; }
     if(!apiUrl){
-      const ok = await confirmModal('先離線記帳嗎？', '你還沒貼記帳 API 網址，這樣記的帳只會存在「這台裝置」上，不會同步到 Google Sheet，也不會跟旅伴同步。之後隨時可以到「設定」補上網址開始同步。');
+      const ok = await confirmModal('先離線記帳嗎？', '還沒有貼上網址，尼尼只能先把帳記在這台裝置裡，沒辦法跟旅伴同步。之後隨時可以到「設定」補上，尼尼再幫你同步。');
       if(!ok) return;
     }
     config = { apiUrl: apiUrl || null, nickname: nickname, selfId: null };
@@ -1142,14 +1157,14 @@
         if(res && res.members) matchedMember = res.members.find(m => (m.name||'').trim().toLowerCase() === nickname.toLowerCase());
       }catch(e){ /* 抓不到既有名單就當新的人處理 */ }
       if(matchedMember){
-        const isSamePerson = await confirmModal('找到同名的旅伴', '這本帳裡已經有一位叫「'+matchedMember.name+'」的旅伴了。如果這是你自己之前（或在別台裝置）記過的帳，選「確定」會沿用同一個身分；如果只是剛好同名的另一個人，請選「取消」，尼尼會幫你建立新的身分。');
+        const isSamePerson = await confirmModal('找到同名的旅伴', '這本帳裡已經有一位叫「'+matchedMember.name+'」的旅伴了。如果是你自己之前記過的帳，選「確定」尼尼會沿用同一個身分；如果只是剛好同名，選「取消」，尼尼會幫你建立新的身分。');
         if(isSamePerson) me = matchedMember;
       }
     }
     if(!me){ me = await Store.addMember(nickname, false); }
     config.selfId = me.id;
     saveConfig();
-    showToast('尼尼已經準備好了，開始記帳吧！');
+    showToast('尼尼已經準備好了，開始記帳吧。');
     boot();
   });
   document.getElementById('init-howto').addEventListener('click', ()=>{
@@ -1184,7 +1199,7 @@
       box.innerHTML = skeletonHTML(3);
     } else {
       box.innerHTML = recent.length === 0
-        ? emptyStateHTML('尼尼還沒收到任何帳喔','點下面的 ＋ 讓尼尼幫你記第一筆吧')
+        ? emptyStateHTML('尼尼還沒有可以整理的帳目。','今天第一筆，交給尼尼吧。')
         : recent.map(e => recentItemHTML(e)).join('');
       paintMascots();
     }
@@ -1256,11 +1271,11 @@
       '<div class="dot '+(i<=w.stepIndex?'done':'')+'"></div>').join('');
     const content = document.getElementById('wiz-content');
     document.getElementById('wiz-back').style.visibility = w.stepIndex===0 ? 'hidden' : 'visible';
-    document.getElementById('wiz-next').textContent = (w.stepIndex === WIZ_STEPS.length-1) ? '✔ 送出' : '下一步';
+    document.getElementById('wiz-next').textContent = (w.stepIndex === WIZ_STEPS.length-1) ? '交給尼尼' : '下一步';
 
     if(step === 'payer'){
       content.innerHTML =
-        '<div class="step-title">這筆錢是誰先墊的？</div><div class="step-sub">尼尼想記清楚，才不會算錯帳喔</div>'+
+        '<div class="step-title">這筆錢是誰先墊的？</div><div class="step-sub">選一位付款人</div>'+
         '<div class="stack" id="payer-list"></div>'+
         '<button class="link-btn" id="wiz-add-member-1">＋ 新增旅伴</button>';
       const list = document.getElementById('payer-list');
@@ -1277,7 +1292,7 @@
 
     if(step === 'amount'){
       content.innerHTML =
-        '<div class="step-title">花了多少呢？</div><div class="step-sub">跟尼尼說金額和幣別</div>'+
+        '<div class="step-title">花了多少呢？</div><div class="step-sub">選擇幣別，輸入金額</div>'+
         '<div class="amount-input-wrap">'+
           '<select id="wiz-currency">'+CURRENCIES.map(c=>'<option value="'+c+'" '+(c===w.currency?'selected':'')+'>'+c+'</option>').join('')+'</select>'+
           '<div class="amount-display '+(w.amount?'':'placeholder')+'" id="wiz-amount-display">'+(w.amount || '輕點輸入金額')+'</div>'+
@@ -1295,9 +1310,9 @@
 
     if(step === 'note'){
       content.innerHTML =
-        '<div class="step-title">這是什麼類別？</div><div class="step-sub">尼尼會用這個幫你統計花費</div>'+
+        '<div class="step-title">這是什麼類型的花費？</div><div class="step-sub">方便之後整理</div>'+
         '<div class="chip-row" id="wiz-category-chips">'+CATEGORIES.map(c=>'<div class="chip cat-chip" data-key="'+c.key+'">'+c.emoji+' '+c.label+'</div>').join('')+'</div>'+
-        '<div class="field" style="margin-top:20px;"><label>想加個備註嗎？（選填）</label>'+
+        '<div class="field" style="margin-top:20px;"><label>這筆花費是什麼？（選填）</label>'+
         '<input type="text" id="wiz-note" placeholder="例如：鼎泰豐晚餐" value="'+escapeHtml(w.note||'')+'"></div>';
       function refreshCategoryChips(){
         document.querySelectorAll('#wiz-category-chips .cat-chip').forEach(chip=>{
@@ -1313,7 +1328,7 @@
 
     if(step === 'participants'){
       content.innerHTML =
-        '<div class="step-title">這筆要跟誰一起分？</div><div class="step-sub">勾選要一起分攤的旅伴</div>'+
+        '<div class="step-title">這筆要跟誰一起分？</div><div class="step-sub">勾選要分攤的人</div>'+
         '<div class="stack" id="participant-list"></div>'+
         '<button class="link-btn" id="wiz-add-member-2">＋ 新增旅伴</button>';
       const list = document.getElementById('participant-list');
@@ -1337,7 +1352,7 @@
 
     if(step === 'split'){
       content.innerHTML =
-        '<div class="step-title">怎麼分最公平？</div><div class="step-sub">選一種尼尼幫你分帳的方式</div>'+
+        '<div class="step-title">怎麼分最公平？</div><div class="step-sub">選擇分攤方式</div>'+
         '<div class="stack" style="margin-bottom:16px;">'+
           splitOptionHTML('equal','平均分攤')+
           splitOptionHTML('ratio','按比例分攤（%）')+
@@ -1381,23 +1396,7 @@
     }
 
     if(w.split_type === 'ratio'){
-      box.innerHTML = parts.map(id=>{
-        const val = w.split_data[id] != null ? w.split_data[id] : 0;
-        return '<div class="split-detail-row"><div class="sname">'+escapeHtml(memberName(id))+'</div>'+
-          '<button class="svalbtn" data-id="'+id+'" data-kind="ratio">'+fmt(val)+'%</button></div>';
-      }).join('') + '<div id="ratio-sum-note"></div>';
-      box.querySelectorAll('.svalbtn[data-kind="ratio"]').forEach(btn=>{
-        btn.addEventListener('click', function(){
-          const id = this.dataset.id;
-          this.classList.add('focused');
-          openNumpad(w.split_data[id] != null ? String(w.split_data[id]) : '', {
-            allowDecimal: true, suffix: '%',
-            onChange: (val)=>{ w.split_data[id] = val === '' ? 0 : Number(val); this.textContent = fmt(w.split_data[id])+'%'; updateRatioNote(); },
-            onDone: ()=>{ this.classList.remove('focused'); }
-          });
-        });
-      });
-      updateRatioNote();
+      renderRatioBar();
       return;
     }
 
@@ -1406,7 +1405,7 @@
         const val = w.split_data[id] != null ? w.split_data[id] : '';
         return '<div class="split-detail-row"><div class="sname">'+escapeHtml(memberName(id))+'</div>'+
           '<button class="svalbtn" data-id="'+id+'" data-kind="custom">'+(val!==''?fmt(val):'0')+'</button></div>';
-      }).join('') + '<div id="custom-sum-note"></div>';
+      }).join('') + '<button class="link-btn" id="custom-clear-all" style="padding:8px 0;">清空全部</button><div id="custom-sum-note"></div>';
       box.querySelectorAll('.svalbtn[data-kind="custom"]').forEach(btn=>{
         btn.addEventListener('click', function(){
           const id = this.dataset.id;
@@ -1418,30 +1417,109 @@
           });
         });
       });
+      document.getElementById('custom-clear-all').addEventListener('click', ()=>{
+        parts.forEach(id=> w.split_data[id] = 0);
+        renderSplitDetail();
+      });
       updateCustomNote();
       return;
     }
   }
 
-  function updateRatioNote(){
+  function ensureRatioDefaults(){
     const w = uiState.wizard;
-    const note = document.getElementById('ratio-sum-note');
-    if(!note) return;
-    const totalPct = w.participants.reduce((s,id)=> s + (Number(w.split_data[id])||0), 0);
-    const amt = Number(w.amount)||0;
-    if(totalPct <= 0){
-      note.className = 'split-sum-note err'; note.textContent = '請輸入每人的比例（不可全為 0%）';
-      return;
+    const parts = w.participants;
+    const hasAll = parts.every(id => typeof w.split_data[id] === 'number' && !isNaN(w.split_data[id]) && w.split_data[id] > 0);
+    const total = parts.reduce((s,id)=> s + (Number(w.split_data[id])||0), 0);
+    if(!hasAll || Math.abs(total - 100) > 0.5){
+      const base = Math.floor(100/parts.length);
+      const remainder = 100 - base*parts.length;
+      parts.forEach((id,i)=>{ w.split_data[id] = base + (i < remainder ? 1 : 0); });
     }
-    const preview = w.participants.map(id=>{
-      const r = Number(w.split_data[id])||0;
-      return memberName(id)+' '+fmt(amt*r/totalPct);
-    }).join('、');
-    if(Math.abs(totalPct - 100) < 0.01){
-      note.className = 'split-sum-note ok'; note.textContent = '總計剛好 100%・'+preview;
-    } else {
-      note.className = 'split-sum-note info'; note.textContent = '總計 '+fmt(totalPct)+'%，尼尼會自動依比例換算：'+preview;
+  }
+
+  function renderRatioBar(){
+    const w = uiState.wizard;
+    const box = document.getElementById('split-detail');
+    if(!box) return;
+    const parts = w.participants;
+    ensureRatioDefaults();
+
+    function buildHTML(){
+      const amt = Number(w.amount)||0;
+      const barInner = parts.map(id=>{
+        const pct = Number(w.split_data[id])||0;
+        return '<div class="ratio-seg" data-seg="'+id+'" style="width:'+pct+'%;background:'+avatarColor(id)+';">'+(pct>=8?Math.round(pct)+'%':'')+'</div>';
+      }).join('');
+      let handles = '';
+      let cum = 0;
+      for(let i=0;i<parts.length-1;i++){
+        cum += Number(w.split_data[parts[i]])||0;
+        handles += '<div class="ratio-handle" data-handle="'+i+'" style="left:'+cum+'%;"></div>';
+      }
+      const listRows = parts.map(id=>{
+        const pct = Number(w.split_data[id])||0;
+        return '<div class="ratio-list-row"><span class="rl-dot" style="background:'+avatarColor(id)+';"></span>'+
+          '<span class="rl-name">'+escapeHtml(memberName(id))+'</span>'+
+          '<span class="rl-pct" data-pct="'+id+'">'+Math.round(pct)+'%</span>'+
+          '<span class="rl-amt" data-amt="'+id+'">'+fmt(amt*pct/100)+' '+w.currency+'</span></div>';
+      }).join('');
+      box.innerHTML = '<div class="ratio-bar" id="ratio-bar-inner">'+barInner+handles+'</div>'+
+        (parts.length > 1 ? '<div class="ratio-hint">拖曳中間的把手調整比例，總和永遠是 100%</div>' : '<div class="ratio-hint">只有一人時，比例固定 100%</div>') +
+        '<div id="ratio-list-inner">'+listRows+'</div>';
+      attachDrag();
     }
+
+    function updateDOMOnly(){
+      const amt = Number(w.amount)||0;
+      parts.forEach(id=>{
+        const pct = Number(w.split_data[id])||0;
+        const seg = box.querySelector('.ratio-seg[data-seg="'+id+'"]');
+        if(seg){ seg.style.width = pct+'%'; seg.textContent = pct>=8?Math.round(pct)+'%':''; }
+        const pctEl = box.querySelector('[data-pct="'+id+'"]');
+        if(pctEl) pctEl.textContent = Math.round(pct)+'%';
+        const amtEl = box.querySelector('[data-amt="'+id+'"]');
+        if(amtEl) amtEl.textContent = fmt(amt*pct/100)+' '+w.currency;
+      });
+      let cum = 0;
+      for(let i=0;i<parts.length-1;i++){
+        cum += Number(w.split_data[parts[i]])||0;
+        const h = box.querySelector('.ratio-handle[data-handle="'+i+'"]');
+        if(h) h.style.left = cum+'%';
+      }
+    }
+
+    function attachDrag(){
+      const barEl = document.getElementById('ratio-bar-inner');
+      box.querySelectorAll('.ratio-handle').forEach(handle=>{
+        const i = Number(handle.dataset.handle);
+        const leftId = parts[i], rightId = parts[i+1];
+        let startX=0, startLeft=0, startRight=0, barWidth=0, dragging=false;
+        handle.addEventListener('pointerdown', (e)=>{
+          e.preventDefault();
+          dragging = true;
+          handle.setPointerCapture(e.pointerId);
+          startX = e.clientX;
+          startLeft = Number(w.split_data[leftId])||0;
+          startRight = Number(w.split_data[rightId])||0;
+          barWidth = barEl.getBoundingClientRect().width;
+        });
+        handle.addEventListener('pointermove', (e)=>{
+          if(!dragging) return;
+          const deltaPct = ((e.clientX - startX)/barWidth)*100;
+          const pairTotal = startLeft+startRight;
+          let newLeft = Math.round(startLeft + deltaPct);
+          newLeft = Math.max(1, Math.min(pairTotal-1, newLeft));
+          w.split_data[leftId] = newLeft;
+          w.split_data[rightId] = pairTotal - newLeft;
+          updateDOMOnly();
+        });
+        handle.addEventListener('pointerup', ()=>{ dragging = false; });
+        handle.addEventListener('pointercancel', ()=>{ dragging = false; });
+      });
+    }
+
+    buildHTML();
   }
   function updateCustomNote(){
     const w = uiState.wizard;
@@ -1459,10 +1537,10 @@
   }
 
   function quickAddMember(cb){
-    promptModal('新旅伴的名字？', '例如：Ben').then(name=>{
+    promptModal('這位新旅伴叫什麼名字？', '例如：Ben').then(name=>{
       if(!name) return;
       Store.addMember(name.trim(), false).then(m=>{
-        showToast('尼尼記住旅伴「'+m.name+'」了 🐾');
+        showToast('尼尼記住旅伴「'+m.name+'」了。');
         if(cb) cb(m);
       });
     });
@@ -1481,17 +1559,17 @@
     if(btn.disabled) return; // 防止連續快點造成重複送出
     const w = uiState.wizard;
     const step = WIZ_STEPS[w.stepIndex];
-    if(step === 'payer' && !w.payer){ showToast('尼尼還不知道這筆是誰付的錢，選一下吧'); return; }
-    if(step === 'amount'){ if(!w.amount || Number(w.amount) <= 0){ showToast('金額好像怪怪的，再確認一下？'); return; } }
-    if(step === 'participants' && w.participants.length === 0){ showToast('至少要選一位一起分攤的旅伴喔'); return; }
+    if(step === 'payer' && !w.payer){ showToast('尼尼還不知道是誰付的錢，選一下。'); return; }
+    if(step === 'amount'){ if(!w.amount || Number(w.amount) <= 0){ showToast('這個金額好像不太對，再確認一下。'); return; } }
+    if(step === 'participants' && w.participants.length === 0){ showToast('至少要選一位一起分攤的人。'); return; }
     if(step === 'split'){
       if(w.split_type === 'ratio'){
         const totalPct = w.participants.reduce((s,id)=> s + (Number(w.split_data[id])||0), 0);
-        if(totalPct <= 0){ showToast('比例還沒填，尼尼不知道怎麼分'); return; }
+        if(totalPct <= 0){ showToast('比例還沒填，尼尼不知道怎麼分。'); return; }
       }
       if(w.split_type === 'custom'){
         const sum = w.participants.reduce((s,id)=> s + (Number(w.split_data[id])||0), 0);
-        if(Math.abs(sum - Number(w.amount)) > 0.01){ showToast('自訂金額加起來要等於總額，尼尼才能送出'); return; }
+        if(Math.abs(sum - Number(w.amount)) > 0.01){ showToast('自訂金額加總要等於總額，尼尼才能送出。'); return; }
       }
       const originalText = btn.textContent;
       btn.disabled = true;
@@ -1525,8 +1603,8 @@
       created_at: w.editingId ? (data.expenses.find(e=>e.id===w.editingId)||{}).created_at || Date.now() : Date.now()
     };
     config.lastCurrency = w.currency; saveConfig();
-    if(w.editingId){ await Store.updateExpense(expense); showToast('尼尼已幫你更新這筆支出'); }
-    else{ await Store.addExpense(expense); showToast('尼尼已幫你記下這筆支出・已同步到帳本'); }
+    if(w.editingId){ await Store.updateExpense(expense); showToast('尼尼幫你更新好了。'); }
+    else{ await Store.addExpense(expense); showToast('尼尼幫大家記好了。'); }
     navigate('ledger');
   }
 
@@ -1538,7 +1616,7 @@
     const box = document.getElementById('ledger-list');
     if(data.expenses.length === 0){
       if(isInitialLoading){ box.innerHTML = skeletonHTML(4); return; }
-      box.innerHTML = emptyStateHTML('帳本還是空白的','按右上角的 ＋，讓尼尼幫你記下第一筆吧'); paintMascots(); return;
+      box.innerHTML = emptyStateHTML('帳本還是空的。','按右上角的 ＋，交給尼尼記下第一筆。'); paintMascots(); return;
     }
 
     const filter = uiState.ledgerFilter;
@@ -1603,7 +1681,7 @@
     if(willBePaid) e.paid[memberId] = true; else delete e.paid[memberId];
     saveLocalData();
     await Store.updateExpense(e);
-    showToast(willBePaid ? (memberName(memberId)+' 這筆標記已還款了 ✅') : '已取消標記');
+    showToast(willBePaid ? ('尼尼記下了，'+memberName(memberId)+' 已經還款。') : '已取消標記。');
     renderLedger();
     if(uiState.currentView === 'dashboard') renderDashboard();
   }
@@ -1615,7 +1693,7 @@
     data.expenses.splice(idx,1); saveLocalData();
     renderLedger();
     if(uiState.currentView === 'dashboard') renderDashboard();
-    showToast('已刪除這筆支出', {
+    showToast('尼尼先幫你收起來了，還可以復原。', {
       undoLabel: '復原',
       duration: 4500,
       onUndo: ()=>{
@@ -1624,7 +1702,7 @@
         renderLedger();
         if(uiState.currentView === 'dashboard') renderDashboard();
         hideToast();
-        showToast('已復原');
+        showToast('尼尼幫你復原了。');
         pendingDelete = null;
       }
     });
@@ -1763,76 +1841,113 @@
     '</div>';
   }
 
-  function buildPaidVsOwedHTML(){
-    const currencies = [...new Set(data.expenses.map(e=>e.currency))];
+  // 依幣別、依人計算：已代墊總金額（當付款人的支出加總，含自己那份）／已收回金額（別人的份中已標記已還款的部分）／待回收金額（別人的份中還沒標記的部分）
+  function computeAdvanceStats(){
+    const result = {};
+    data.expenses.forEach(e=>{
+      const cur = e.currency || 'TWD';
+      if(!result[cur]) result[cur] = {};
+      const payer = e.payer;
+      if(!result[cur][payer]) result[cur][payer] = { advanced:0, collected:0, outstanding:0 };
+      result[cur][payer].advanced += Number(e.amount)||0;
+      const shares = computeShares(e);
+      const paid = e.paid || {};
+      Object.keys(shares).forEach(id=>{
+        if(id === payer) return; // 自己的份不算代墊給別人
+        if(paid[id]) result[cur][payer].collected += shares[id];
+        else result[cur][payer].outstanding += shares[id];
+      });
+    });
+    // 讓曾經出現過的人都有記錄，即使從沒當過付款人
+    data.expenses.forEach(e=>{
+      const cur = e.currency || 'TWD';
+      if(!result[cur]) result[cur] = {};
+      (e.participants||[]).forEach(id=>{
+        if(!result[cur][id]) result[cur][id] = { advanced:0, collected:0, outstanding:0 };
+      });
+    });
+    return result;
+  }
+
+  function buildAdvanceStatsHTML(){
+    const stats = computeAdvanceStats();
+    const currencies = Object.keys(stats);
     let html = '';
     currencies.forEach(cur=>{
-      const paidTotal = {}, owedTotal = {};
-      data.expenses.filter(e=>e.currency===cur).forEach(e=>{
-        paidTotal[e.payer] = (paidTotal[e.payer]||0) + (Number(e.amount)||0);
-        const shares = computeShares(e);
-        Object.keys(shares).forEach(id=>{ owedTotal[id] = (owedTotal[id]||0) + shares[id]; });
-      });
-      const ids = [...new Set([...Object.keys(paidTotal), ...Object.keys(owedTotal)])];
+      const people = stats[cur];
+      const ids = Object.keys(people).sort((a,b)=> people[b].advanced - people[a].advanced);
       if(ids.length === 0) return;
-      const max = Math.max(1, ...ids.map(id=>Math.max(paidTotal[id]||0, owedTotal[id]||0)));
-      html += '<div class="card" style="margin-bottom:12px;">';
-      html += '<div class="currency-tag" style="margin-bottom:10px;">'+cur+'</div>';
+      html += '<div class="currency-block">';
+      html += '<div class="currency-tag">'+cur+'</div>';
       ids.forEach(id=>{
-        const paid = paidTotal[id]||0, owed = owedTotal[id]||0;
-        html += '<div style="margin-bottom:12px;">';
-        html += '<div style="font-size:13px;font-weight:700;margin-bottom:5px;">'+escapeHtml(memberName(id))+'</div>';
-        html += '<div class="bar-chart-row"><span class="blabel">墊付</span><div class="btrack"><div class="bfill" style="width:'+(paid/max*100)+'%;background:var(--blue);"></div></div><span class="bval mono">'+fmt(paid)+'</span></div>';
-        html += '<div class="bar-chart-row"><span class="blabel">應負擔</span><div class="btrack"><div class="bfill" style="width:'+(owed/max*100)+'%;background:var(--ink-faint);"></div></div><span class="bval mono">'+fmt(owed)+'</span></div>';
+        const p = people[id];
+        const color = avatarColor(id);
+        const owedTotal = p.collected + p.outstanding;
+        const collectedPct = owedTotal > 0 ? (p.collected/owedTotal*100) : 0;
+        const outstandingPct = owedTotal > 0 ? (p.outstanding/owedTotal*100) : 0;
+        html += '<div class="card" style="margin-bottom:10px;">';
+        html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'+
+          '<div class="savatar" style="background:'+color+'22;color:'+color+';">'+initials(memberName(id))+'</div>'+
+          '<div style="font-weight:800;font-size:14.5px;flex:1;">'+escapeHtml(memberName(id))+'</div>'+
+          '<div class="mono" style="font-weight:800;font-size:13.5px;">已代墊 '+fmt(p.advanced)+'</div></div>';
+        html += '<div class="advance-bar">'+
+          (p.collected>0.005 ? '<div class="advance-seg collected" style="width:'+collectedPct+'%;"></div>' : '')+
+          (p.outstanding>0.005 ? '<div class="advance-seg outstanding" style="width:'+outstandingPct+'%;"></div>' : '')+
+          (owedTotal<=0.005 ? '<div class="advance-seg empty" style="width:100%;"></div>' : '')+
+        '</div>';
+        html += '<div class="advance-legend">'+
+          '<span><span class="dot collected"></span>已收回 '+fmt(p.collected)+'</span>'+
+          '<span><span class="dot outstanding"></span>待回收 '+fmt(p.outstanding)+'</span>'+
+        '</div>';
         html += '</div>';
       });
       html += '</div>';
     });
-    return html ? ('<div class="section-title" style="margin-top:18px;">誰墊了多少 vs 該負擔多少</div>'+html) : '';
+    return html;
   }
 
   function renderSettlement(){
     const box = document.getElementById('settlement-content');
-    if(data.expenses.length === 0){ box.innerHTML = emptyStateHTML('還沒帳可以結算','先記幾筆支出，尼尼就能幫你把帳算得清清楚楚','sleepy'); paintMascots(); return; }
-    const balancesByCurrency = computeBalancesByCurrency();
+    if(data.expenses.length === 0){ box.innerHTML = emptyStateHTML('還沒有帳可以整理。','先記幾筆支出，尼尼就能幫你把帳算清楚。','sleepy'); paintMascots(); return; }
+    const totalOutstanding = Object.values(computeAdvanceStats()).reduce((sum,people)=>
+      sum + Object.values(people).reduce((s,p)=>s+p.outstanding,0), 0);
+
     let html = buildTripSummaryHTML();
-    let allSettled = true;
-    let pendingPeople = 0;
-    Object.keys(balancesByCurrency).forEach(cur=>{
-      const balances = balancesByCurrency[cur];
-      const total = data.expenses.filter(e=>e.currency===cur).reduce((s,e)=>s+Number(e.amount||0),0);
-      html += '<div class="currency-block">';
-      html += '<div class="currency-tag">'+cur+'</div>';
-      html += '<div class="card" style="margin-bottom:12px;">';
-      html += '<div class="helper" style="margin-bottom:10px;">總支出 '+fmt(total)+' '+cur+'</div>';
-      Object.keys(balances).forEach(id=>{
-        const v = balances[id];
-        const color = avatarColor(id);
-        const cls = v > 0.01 ? 'owed' : (v < -0.01 ? 'owes' : 'even');
-        if(cls !== 'even'){ allSettled = false; pendingPeople++; }
-        const sentence = v > 0.01
-          ? '可以收回 <b>'+fmt(v)+' '+cur+'</b>'
-          : (v < -0.01 ? '還要付 <b>'+fmt(-v)+' '+cur+'</b>' : '已經打平了 🎉');
-        html += '<div class="status-card '+cls+'"><div class="savatar" style="background:'+color+'22;color:'+color+';">'+initials(memberName(id))+'</div>'+
-          '<div class="stext"><b>'+escapeHtml(memberName(id))+'</b> '+sentence+'</div></div>';
-      });
-      html += '</div></div>';
-    });
-    const banner = allSettled
-      ? '<div class="status-banner clear">🎉 全部結清，沒有人欠誰</div>'
-      : '<div class="status-banner pending">💸 還有 '+pendingPeople+' 人款項尚未結清</div>';
-    html = banner + html;
-    if(allSettled){
-      html = '<div class="celebrate"><svg class="eemo-mascot-svg" data-mood="sparkle" style="width:64px;height:64px;vertical-align:middle;margin-right:6px;"></svg>尼尼看過了，帳都算得剛剛好！</div>' + html;
+    if(totalOutstanding <= 0.005){
+      html += '<div class="celebrate"><svg class="eemo-mascot-svg" data-mood="sparkle" style="width:64px;height:64px;vertical-align:middle;margin-right:6px;"></svg>尼尼確認過了，帳都收回來了。</div>';
     }
-    html += buildPaidVsOwedHTML();
-    html += '<button class="btn btn-blue" id="gen-line-btn">生成 LINE 結算文字</button>';
+    html += buildAdvanceStatsHTML();
+    html += '<button class="btn btn-blue" id="gen-settlement-btn" style="margin-top:6px;">生成目前結算結果</button>';
+    html += '<div id="settlement-result" style="display:none;"></div>';
+    html += '<button class="btn btn-ghost" id="gen-line-btn" style="margin-top:10px;">生成 LINE 結算文字</button>';
     html += '<div id="line-output" style="display:none;"></div>';
     html += '<button class="btn btn-ghost" id="copy-line-btn" style="display:none;margin-top:10px;">複製文字</button>';
     box.innerHTML = html;
     paintMascots();
 
+    document.getElementById('gen-settlement-btn').addEventListener('click', ()=>{
+      const balancesByCurrency = computeBalancesByCurrency();
+      let resultHTML = '';
+      Object.keys(balancesByCurrency).forEach(cur=>{
+        const txns = simplifyDebts(balancesByCurrency[cur]);
+        if(txns.length === 0) return;
+        resultHTML += '<div class="currency-tag" style="margin-top:12px;">'+cur+'</div>';
+        txns.forEach(t=>{
+          resultHTML += '<div class="txn-row">'+
+            '<div class="savatar" style="background:'+avatarColor(t.from)+'22;color:'+avatarColor(t.from)+';">'+initials(memberName(t.from))+'</div>'+
+            '<span class="tfrom">'+escapeHtml(memberName(t.from))+'</span>'+
+            '<span class="arrow">→</span>'+
+            '<div class="savatar" style="background:'+avatarColor(t.to)+'22;color:'+avatarColor(t.to)+';">'+initials(memberName(t.to))+'</div>'+
+            '<span class="tto">'+escapeHtml(memberName(t.to))+'</span>'+
+            '<span class="tamt mono">'+fmt(t.amount)+' '+cur+'</span></div>';
+        });
+      });
+      const out = document.getElementById('settlement-result');
+      out.innerHTML = resultHTML || '<div class="helper" style="margin-top:10px;">尼尼看過了，目前沒有人欠誰，不用轉帳。</div>';
+      out.style.display = 'block';
+    });
     document.getElementById('gen-line-btn').addEventListener('click', ()=>{
+      const balancesByCurrency = computeBalancesByCurrency();
       const text = buildLineSummary(balancesByCurrency);
       const out = document.getElementById('line-output');
       out.textContent = text; out.style.display = 'block';
@@ -1840,13 +1955,34 @@
     });
     document.getElementById('copy-line-btn').addEventListener('click', async ()=>{
       const text = document.getElementById('line-output').textContent;
-      try{ await navigator.clipboard.writeText(text); showToast('已複製，貼到 LINE 就完成了 📋'); }
-      catch(e){ showToast('複製失敗，麻煩手動選取文字囉'); }
+      try{ await navigator.clipboard.writeText(text); showToast('已複製，貼到 LINE 就完成了。'); }
+      catch(e){ showToast('複製失敗了，麻煩手動選取文字。'); }
     });
   }
 
+  function simplifyDebts(balanceMap){
+    const creditors = [], debtors = [];
+    Object.keys(balanceMap).forEach(id=>{
+      const v = balanceMap[id];
+      if(v > 0.01) creditors.push({ id, v });
+      else if(v < -0.01) debtors.push({ id, v: -v });
+    });
+    creditors.sort((a,b)=>b.v-a.v);
+    debtors.sort((a,b)=>b.v-a.v);
+    const txns = [];
+    let i=0, j=0;
+    while(i < debtors.length && j < creditors.length){
+      const pay = Math.min(debtors[i].v, creditors[j].v);
+      txns.push({ from: debtors[i].id, to: creditors[j].id, amount: pay });
+      debtors[i].v -= pay; creditors[j].v -= pay;
+      if(debtors[i].v < 0.01) i++;
+      if(creditors[j].v < 0.01) j++;
+    }
+    return txns;
+  }
+
   function buildLineSummary(balancesByCurrency){
-    let lines = ['🧳 這趟旅行的結算摘要',''];
+    let lines = ['🧳 尼尼整理的結算摘要',''];
     Object.keys(balancesByCurrency).forEach(cur=>{
       const balances = balancesByCurrency[cur];
       const total = data.expenses.filter(e=>e.currency===cur).reduce((s,e)=>s+Number(e.amount||0),0);
@@ -1855,9 +1991,14 @@
         const v = balances[id];
         lines.push(memberName(id)+'：'+(v>=0?'+':'−')+fmt(Math.abs(v)));
       });
+      const txns = simplifyDebts(balances);
+      if(txns.length){
+        lines.push(''); lines.push('建議還款：');
+        txns.forEach(t=> lines.push(memberName(t.from)+' → '+memberName(t.to)+' '+fmt(t.amount)+' '+cur));
+      }
       lines.push('');
     });
-    lines.push('— 尼尼管家公');
+    lines.push('— 尼尼');
     return lines.join('\n');
   }
 
@@ -1867,7 +2008,7 @@
   function renderMembers(){
     document.getElementById('members-sub').textContent = '共 '+data.members.length+' 人';
     const box = document.getElementById('members-list');
-    if(data.members.length === 0){ box.innerHTML = emptyStateHTML('還沒有旅伴加入','按右上角的 ＋，邀第一位旅伴一起記帳吧'); paintMascots(); return; }
+    if(data.members.length === 0){ box.innerHTML = emptyStateHTML('尼尼還沒認識任何旅伴。','按右上角的 ＋，邀請第一位加入吧。'); paintMascots(); return; }
     box.innerHTML = data.members.map(m=>
       '<div class="member-row">'+
         '<div class="member-avatar" style="background:'+avatarColor(m.id)+';">'+initials(m.name)+'</div>'+
@@ -1879,12 +2020,12 @@
     box.querySelectorAll('.js-edit-member').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const m = data.members.find(x=>x.id===btn.dataset.id);
-        const name = await promptModal('新的名字？', '例如：Ben', m.name);
+        const name = await promptModal('新的名字是？', '例如：Ben', m.name);
         if(name){
           m.name = name.trim(); saveLocalData();
           if(isOnline()) apiCall('addMember', { member: m }).catch(()=>{});
           renderMembers();
-          showToast('尼尼幫你改好名字了');
+          showToast('尼尼幫你改好名字了。');
         }
       });
     });
@@ -1893,7 +2034,7 @@
         const used = data.expenses.some(e=> e.payer===btn.dataset.id || e.participants.includes(btn.dataset.id));
         const msg = used ? '這位旅伴出現在既有支出中，刪除後帳本上仍保留紀錄但無法再選用他。' : '刪除後無法復原。';
         const ok = await confirmModal('刪除這位旅伴？', msg);
-        if(ok){ await Store.deleteMember(btn.dataset.id); renderMembers(); showToast('已經把這位旅伴請出名單了'); }
+        if(ok){ await Store.deleteMember(btn.dataset.id); renderMembers(); showToast('尼尼把這位旅伴請出名單了。'); }
       });
     });
   }
@@ -1930,7 +2071,7 @@
       if(me){ config.selfId = me.id; config.nickname = me.name; }
     }
     saveConfig();
-    showToast('尼尼記住了，設定已儲存 ✅');
+    showToast('尼尼記住了。');
     navigate('dashboard');
     if(wasOffline && config.apiUrl){
       await pushAllLocalData();
@@ -1938,7 +2079,7 @@
     }
   });
   document.getElementById('set-reset').addEventListener('click', async ()=>{
-    const ok = await confirmModal('清除所有資料？', '這會刪除這台裝置上的設定與離線資料，且無法復原，尼尼會忘記這一切喔。');
+    const ok = await confirmModal('清除所有資料？', '這會刪除這台裝置上的設定與離線資料，且無法復原，尼尼會忘記這一切。');
     if(ok){ localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_DATA_KEY); location.reload(); }
   });
   document.getElementById('settle-refresh').addEventListener('click', syncNow);
@@ -1947,17 +2088,17 @@
     const appUrl = location.href.split('?')[0].split('#')[0];
     const link = config.apiUrl ? (appUrl + '?api=' + encodeURIComponent(config.apiUrl)) : appUrl;
     return [
-      '🐾 一起用「尼尼管家公」記帳吧！',
+      '一起用「小秘書尼尼」記帳吧！',
       '',
       '1️⃣ 點開這個連結：'+link,
-      '2️⃣ 輸入你的名字，就可以開始記帳',
-      '3️⃣ 大家記的帳都會同步進同一本 Google Sheet，尼尼會自動幫忙算好誰欠誰多少',
+      '2️⃣ 選一下你是誰，就可以開始記帳',
+      '3️⃣ 大家記的帳都會同步進同一本 Google Sheet，尼尼會幫忙把帳算清楚',
       '',
-      '— 尼尼管家公 汪！'
+      '— 尼尼'
     ].join('\n');
   }
   document.getElementById('gen-invite-btn').addEventListener('click', ()=>{
-    if(!config.apiUrl){ showToast('要先貼上「記帳 API 網址」並儲存，尼尼才能生成邀請連結喔'); return; }
+    if(!config.apiUrl){ showToast('要先貼上「記帳 API 網址」並儲存，尼尼才能生成邀請連結。'); return; }
     const text = buildInviteText();
     const out = document.getElementById('invite-output');
     out.textContent = text;
@@ -1966,8 +2107,8 @@
   });
   document.getElementById('copy-invite-btn').addEventListener('click', async ()=>{
     const text = document.getElementById('invite-output').textContent;
-    try{ await navigator.clipboard.writeText(text); showToast('已複製，貼給旅伴就能揪團了 🐾'); }
-    catch(e){ showToast('複製失敗，請手動選取文字'); }
+    try{ await navigator.clipboard.writeText(text); showToast('已複製，貼給旅伴就能加入了。'); }
+    catch(e){ showToast('複製失敗了，請手動選取文字。'); }
   });
 
   /* =====================================================
@@ -1990,10 +2131,10 @@
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(url), 1000);
-    showToast('已匯出 '+filename+' ⬇️');
+    showToast('尼尼幫你匯出好了。');
   }
   function exportExpensesCSV(){
-    if(data.expenses.length === 0){ showToast('目前還沒有支出可以匯出喔'); return; }
+    if(data.expenses.length === 0){ showToast('目前還沒有帳可以匯出。'); return; }
     const rows = [['日期','付款人','金額','幣別','類別','備註','分帳對象','分帳方式','分帳明細','還款狀態','建立時間']];
     data.expenses.slice().sort((a,b)=>(a.created_at||0)-(b.created_at||0)).forEach(e=>{
       const shares = computeShares(e);
@@ -2016,7 +2157,7 @@
         new Date(e.created_at).toLocaleString('zh-TW')
       ]);
     });
-    downloadCSV('尼尼管家公_帳本_'+todayStr()+'.csv', rows);
+    downloadCSV('小秘書尼尼_帳本_'+todayStr()+'.csv', rows);
   }
   document.getElementById('export-expenses-btn').addEventListener('click', exportExpensesCSV);
 
