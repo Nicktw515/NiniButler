@@ -1,6 +1,6 @@
 {
-  "name": "尼尼管家公",
-  "short_name": "尼尼管家公",
+  "name": "小秘書尼尼",
+  "short_name": "小秘書尼尼",
   "description": "旅行記帳分帳工具 — 貼上連結，馬上開始跟旅伴分帳",
   "start_url": "./index.html",
   "display": "standalone",

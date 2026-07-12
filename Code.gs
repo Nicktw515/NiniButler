@@ -52,20 +52,32 @@ const SETTLEMENTS_LABELS = [
   "編號(系統用)", "還款人ID(系統用)", "收款人ID(系統用)", "建立時間戳記(系統用)"
 ];
 
+const READ_ACTIONS = ["getMembers", "getExpenses", "getSettlements", "getAll"];
+
 function doPost(e) {
-  const lock = LockService.getScriptLock();
-  try {
-    lock.waitLock(10000);
-  } catch (lockErr) {
-    return jsonOut({ error: "尼尼現在有點忙（同時有其他人在寫入），請稍等一下再試一次" });
-  }
+  let lock = null;
+  let lockAcquired = false;
   try {
     const body = JSON.parse(e.postData.contents);
     const action = body.action;
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const needsLock = READ_ACTIONS.indexOf(action) === -1;
+
+    if (needsLock) {
+      lock = LockService.getScriptLock();
+      try {
+        lock.waitLock(10000);
+        lockAcquired = true;
+      } catch (lockErr) {
+        return jsonOut({ error: "尼尼現在有點忙（同時有其他人在寫入），請稍等一下再試一次" });
+      }
+    }
 
     let result;
     switch (action) {
+      case "getAll":
+        result = { members: getMembers(ss), expenses: getExpenses(ss), settlements: getSettlements(ss) };
+        break;
       case "getMembers":
         result = { members: getMembers(ss) };
         break;
@@ -110,7 +122,7 @@ function doPost(e) {
   } catch (err) {
     return jsonOut({ error: String(err) });
   } finally {
-    lock.releaseLock();
+    if (lockAcquired) lock.releaseLock();
   }
 }
 
