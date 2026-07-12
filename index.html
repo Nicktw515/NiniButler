@@ -65,7 +65,7 @@
     box-shadow:0 0 60px rgba(20,22,26,0.06);
     overflow:hidden;
   }
-  .view{display:none;flex:1;flex-direction:column;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(96px + var(--safe-bottom));}
+  .view{display:none;flex:1;flex-direction:column;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(120px + var(--safe-bottom));}
   .view.active{display:flex;}
   .view.no-nav{padding-bottom:24px;}
 
@@ -146,12 +146,10 @@
     position:relative;overflow:hidden;
   }
   .hero-total .paw-deco{position:absolute;right:-10px;bottom:-14px;width:92px;height:92px;opacity:0.16;}
-  .hero-stats{display:flex;gap:18px;position:relative;z-index:1;align-items:flex-start;}
-  .hero-stats .hstat.count{flex:0 0 30%;min-width:70px;}
-  .hero-stats .hstat.totals{flex:1 1 auto;min-width:0;}
-  .hero-stats .hlabel{font-size:12px;color:rgba(255,255,255,0.72);font-weight:700;margin-bottom:6px;}
-  .hero-stats .hvalue{font-family:var(--font-mono);font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;word-break:break-word;}
-  .hero-stats .hvalue-line{font-family:var(--font-mono);font-size:19px;font-weight:700;letter-spacing:-0.02em;line-height:1.5;word-break:break-word;}
+  .hero-stats{display:flex;flex-direction:column;gap:10px;position:relative;z-index:1;}
+  .hero-stats .hrow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;}
+  .hero-stats .hrow .hlabel{font-size:12px;color:rgba(255,255,255,0.72);font-weight:700;flex-shrink:0;}
+  .hero-stats .hrow .hvalue{font-family:var(--font-mono);font-size:20px;font-weight:700;letter-spacing:-0.02em;text-align:right;white-space:nowrap;}
   .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
   .quick-card{
     background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-lg);padding:15px;
@@ -321,11 +319,10 @@
   .advance-legend .dot.collected{background:var(--green);}
   .advance-legend .dot.outstanding{background:#E0A62E;}
   .currency-block{margin-bottom:22px;}
-  .summary-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:18px;align-items:start;}
-  .summary-cell{background:var(--surface);border-radius:var(--radius-md);padding:14px;}
-  .summary-cell .slabel{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-bottom:4px;}
-  .summary-cell .sval{font-family:var(--font-mono);font-size:17px;font-weight:800;line-height:1.3;}
-  .summary-cell .sval-line{font-family:var(--font-mono);font-size:15px;font-weight:800;line-height:1.6;word-break:break-word;}
+  .summary-stack{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+  .summary-cell{background:var(--surface);border-radius:var(--radius-md);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:14px;}
+  .summary-cell .slabel{font-size:12.5px;color:var(--ink-soft);font-weight:700;flex-shrink:0;}
+  .summary-cell .sval{font-family:var(--font-mono);font-size:18px;font-weight:800;text-align:right;white-space:nowrap;}
   .bar-chart-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
   .bar-chart-row .blabel{width:56px;font-size:12px;color:var(--ink-soft);font-weight:700;flex-shrink:0;}
   .bar-chart-row .btrack{flex:1;background:var(--surface-2);border-radius:6px;height:14px;overflow:hidden;}
@@ -1186,17 +1183,14 @@
     const totalsByCurrency = {};
     data.expenses.forEach(e=>{ totalsByCurrency[e.currency] = (totalsByCurrency[e.currency]||0) + (Number(e.amount)||0); });
     const currencies = Object.keys(totalsByCurrency).sort((a,b)=> totalsByCurrency[b]-totalsByCurrency[a]);
-    let totalsHTML = '<div class="hlabel">總支出</div>';
+    let statsHTML = '<div class="hrow"><span class="hlabel">支出筆數</span><span class="hvalue">'+data.expenses.length+' 筆</span></div>';
     if(currencies.length === 0){
-      totalsHTML += '<div class="hvalue-line">0</div>';
+      statsHTML += '<div class="hrow"><span class="hlabel">總支出</span><span class="hvalue">0</span></div>';
     } else {
       currencies.forEach(cur=>{
-        totalsHTML += '<div class="hvalue-line">'+fmt(totalsByCurrency[cur])+' '+cur+'</div>';
+        statsHTML += '<div class="hrow"><span class="hlabel">總支出（'+cur+'）</span><span class="hvalue">'+fmt(totalsByCurrency[cur])+' '+cur+'</span></div>';
       });
     }
-    const statsHTML =
-      '<div class="hstat count"><div class="hlabel">支出筆數</div><div class="hvalue">'+data.expenses.length+' 筆</div></div>'+
-      '<div class="hstat totals">'+totalsHTML+'</div>';
     document.getElementById('hero-stats').innerHTML = statsHTML;
 
     const recent = data.expenses.slice(0,5);
@@ -1868,13 +1862,17 @@
     const totalsByCurrency = {};
     data.expenses.forEach(e=>{ totalsByCurrency[e.currency] = (totalsByCurrency[e.currency]||0) + (Number(e.amount)||0); });
     const currencies = Object.keys(totalsByCurrency).sort((a,b)=>totalsByCurrency[b]-totalsByCurrency[a]);
-    const totalHTML = currencies.length
-      ? currencies.map(c=>'<div class="sval-line">'+fmt(totalsByCurrency[c])+' '+c+'</div>').join('')
-      : '<div class="sval-line">0</div>';
-    return '<div class="summary-grid">'+
-      '<div class="summary-cell"><div class="slabel">總支出</div>'+totalHTML+'</div>'+
-      '<div class="summary-cell"><div class="slabel">支出筆數</div><div class="sval">'+data.expenses.length+' 筆</div></div>'+
-    '</div>';
+    let html = '<div class="summary-stack">';
+    html += '<div class="summary-cell"><span class="slabel">支出筆數</span><span class="sval">'+data.expenses.length+' 筆</span></div>';
+    if(currencies.length === 0){
+      html += '<div class="summary-cell"><span class="slabel">總支出</span><span class="sval">0</span></div>';
+    } else {
+      currencies.forEach(c=>{
+        html += '<div class="summary-cell"><span class="slabel">總支出（'+c+'）</span><span class="sval">'+fmt(totalsByCurrency[c])+' '+c+'</span></div>';
+      });
+    }
+    html += '</div>';
+    return html;
   }
 
   // 依幣別、依人計算：已代墊總金額（當付款人的支出加總，含自己那份）／已收回金額（別人的份中已標記已還款的部分）／待回收金額（別人的份中還沒標記的部分）
@@ -1958,6 +1956,7 @@
     html += '<button class="btn btn-ghost" id="gen-line-btn" style="margin-top:10px;">生成 LINE 結算文字</button>';
     html += '<div id="line-output" style="display:none;"></div>';
     html += '<button class="btn btn-ghost" id="copy-line-btn" style="display:none;margin-top:10px;">複製文字</button>';
+    html += '<div style="height:24px;"></div>';
     box.innerHTML = html;
     paintMascots();
 
