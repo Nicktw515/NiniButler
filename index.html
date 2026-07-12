@@ -95,7 +95,7 @@
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
   /* ---------- Generic layout ---------- */
-  .content{padding:0 20px;flex:1;}
+  .content{padding:0 20px;flex:1;min-height:0;}
   .stack{display:flex;flex-direction:column;gap:12px;}
   .field{display:flex;flex-direction:column;gap:6px;}
   .field label{font-size:13px;font-weight:700;color:var(--ink-soft);}
@@ -146,10 +146,12 @@
     position:relative;overflow:hidden;
   }
   .hero-total .paw-deco{position:absolute;right:-10px;bottom:-14px;width:92px;height:92px;opacity:0.16;}
-  .hero-stats{display:flex;flex-wrap:wrap;gap:14px 18px;position:relative;z-index:1;}
-  .hero-stats .hstat{flex:1 1 40%;min-width:112px;}
+  .hero-stats{display:flex;gap:18px;position:relative;z-index:1;align-items:flex-start;}
+  .hero-stats .hstat.count{flex:0 0 30%;min-width:70px;}
+  .hero-stats .hstat.totals{flex:1 1 auto;min-width:0;}
   .hero-stats .hlabel{font-size:12px;color:rgba(255,255,255,0.72);font-weight:700;margin-bottom:6px;}
   .hero-stats .hvalue{font-family:var(--font-mono);font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;word-break:break-word;}
+  .hero-stats .hvalue-line{font-family:var(--font-mono);font-size:19px;font-weight:700;letter-spacing:-0.02em;line-height:1.5;word-break:break-word;}
   .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
   .quick-card{
     background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-lg);padding:15px;
@@ -319,10 +321,11 @@
   .advance-legend .dot.collected{background:var(--green);}
   .advance-legend .dot.outstanding{background:#E0A62E;}
   .currency-block{margin-bottom:22px;}
-  .summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
+  .summary-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:18px;align-items:start;}
   .summary-cell{background:var(--surface);border-radius:var(--radius-md);padding:14px;}
   .summary-cell .slabel{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-bottom:4px;}
   .summary-cell .sval{font-family:var(--font-mono);font-size:17px;font-weight:800;line-height:1.3;}
+  .summary-cell .sval-line{font-family:var(--font-mono);font-size:15px;font-weight:800;line-height:1.6;word-break:break-word;}
   .bar-chart-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
   .bar-chart-row .blabel{width:56px;font-size:12px;color:var(--ink-soft);font-weight:700;flex-shrink:0;}
   .bar-chart-row .btrack{flex:1;background:var(--surface-2);border-radius:6px;height:14px;overflow:hidden;}
@@ -892,7 +895,7 @@
     });
     setInterval(()=>{
       if(isOnline() && document.visibilityState === 'visible') syncNow(true);
-    }, 60000);
+    }, 180000);
   }
 
   async function apiCall(action, payload){
@@ -1183,14 +1186,17 @@
     const totalsByCurrency = {};
     data.expenses.forEach(e=>{ totalsByCurrency[e.currency] = (totalsByCurrency[e.currency]||0) + (Number(e.amount)||0); });
     const currencies = Object.keys(totalsByCurrency).sort((a,b)=> totalsByCurrency[b]-totalsByCurrency[a]);
-    let statsHTML = '<div class="hstat"><div class="hlabel">支出筆數</div><div class="hvalue">'+data.expenses.length+' 筆</div></div>';
+    let totalsHTML = '<div class="hlabel">總支出</div>';
     if(currencies.length === 0){
-      statsHTML += '<div class="hstat"><div class="hlabel">總支出</div><div class="hvalue">0</div></div>';
+      totalsHTML += '<div class="hvalue-line">0</div>';
     } else {
       currencies.forEach(cur=>{
-        statsHTML += '<div class="hstat"><div class="hlabel">總支出（'+cur+'）</div><div class="hvalue">'+fmt(totalsByCurrency[cur])+'</div></div>';
+        totalsHTML += '<div class="hvalue-line">'+fmt(totalsByCurrency[cur])+' '+cur+'</div>';
       });
     }
+    const statsHTML =
+      '<div class="hstat count"><div class="hlabel">支出筆數</div><div class="hvalue">'+data.expenses.length+' 筆</div></div>'+
+      '<div class="hstat totals">'+totalsHTML+'</div>';
     document.getElementById('hero-stats').innerHTML = statsHTML;
 
     const recent = data.expenses.slice(0,5);
@@ -1388,10 +1394,13 @@
     const parts = w.participants;
 
     if(w.split_type === 'equal'){
-      const each = parts.length ? (Number(w.amount)||0)/parts.length : 0;
+      const amt = Number(w.amount)||0;
+      const raw = {};
+      parts.forEach(id=> raw[id] = parts.length ? amt/parts.length : 0);
+      const shares = roundShares(raw, amt);
       box.innerHTML = parts.map(id=>
-        '<div class="split-detail-row"><div class="sname">'+escapeHtml(memberName(id))+'</div><div class="mono">'+fmt(each)+'</div></div>'
-      ).join('') + '<div class="split-sum-note ok">每人平均分攤 '+fmt(each)+' '+w.currency+'</div>';
+        '<div class="split-detail-row"><div class="sname">'+escapeHtml(memberName(id))+'</div><div class="mono">'+fmt(shares[id])+' '+w.currency+'</div></div>'
+      ).join('') + '<div class="split-sum-note ok">每人平均分攤，總和等於 '+fmt(amt)+' '+w.currency+'</div>';
       return;
     }
 
@@ -1404,7 +1413,7 @@
       box.innerHTML = parts.map(id=>{
         const val = w.split_data[id] != null ? w.split_data[id] : '';
         return '<div class="split-detail-row"><div class="sname">'+escapeHtml(memberName(id))+'</div>'+
-          '<button class="svalbtn" data-id="'+id+'" data-kind="custom">'+(val!==''?fmt(val):'0')+'</button></div>';
+          '<button class="svalbtn" data-id="'+id+'" data-kind="custom">'+(val!==''?fmt(val):'0')+' '+w.currency+'</button></div>';
       }).join('') + '<button class="link-btn" id="custom-clear-all" style="padding:8px 0;">清空全部</button><div id="custom-sum-note"></div>';
       box.querySelectorAll('.svalbtn[data-kind="custom"]').forEach(btn=>{
         btn.addEventListener('click', function(){
@@ -1412,7 +1421,7 @@
           this.classList.add('focused');
           openNumpad(w.split_data[id] != null ? String(w.split_data[id]) : '', {
             allowDecimal: true,
-            onChange: (val)=>{ w.split_data[id] = val === '' ? 0 : Number(val); this.textContent = fmt(w.split_data[id]); updateCustomNote(); },
+            onChange: (val)=>{ w.split_data[id] = val === '' ? 0 : Number(val); this.textContent = fmt(w.split_data[id])+' '+w.currency; updateCustomNote(); },
             onDone: ()=>{ this.classList.remove('focused'); }
           });
         });
@@ -1445,8 +1454,15 @@
     const parts = w.participants;
     ensureRatioDefaults();
 
-    function buildHTML(){
+    function roundedAmounts(){
       const amt = Number(w.amount)||0;
+      const raw = {};
+      parts.forEach(id=> raw[id] = amt * (Number(w.split_data[id])||0) / 100);
+      return roundShares(raw, amt);
+    }
+
+    function buildHTML(){
+      const amounts = roundedAmounts();
       const barInner = parts.map(id=>{
         const pct = Number(w.split_data[id])||0;
         return '<div class="ratio-seg" data-seg="'+id+'" style="width:'+pct+'%;background:'+avatarColor(id)+';">'+(pct>=8?Math.round(pct)+'%':'')+'</div>';
@@ -1462,7 +1478,7 @@
         return '<div class="ratio-list-row"><span class="rl-dot" style="background:'+avatarColor(id)+';"></span>'+
           '<span class="rl-name">'+escapeHtml(memberName(id))+'</span>'+
           '<span class="rl-pct" data-pct="'+id+'">'+Math.round(pct)+'%</span>'+
-          '<span class="rl-amt" data-amt="'+id+'">'+fmt(amt*pct/100)+' '+w.currency+'</span></div>';
+          '<span class="rl-amt" data-amt="'+id+'">'+fmt(amounts[id])+' '+w.currency+'</span></div>';
       }).join('');
       box.innerHTML = '<div class="ratio-bar" id="ratio-bar-inner">'+barInner+handles+'</div>'+
         (parts.length > 1 ? '<div class="ratio-hint">拖曳中間的把手調整比例，總和永遠是 100%</div>' : '<div class="ratio-hint">只有一人時，比例固定 100%</div>') +
@@ -1471,7 +1487,7 @@
     }
 
     function updateDOMOnly(){
-      const amt = Number(w.amount)||0;
+      const amounts = roundedAmounts();
       parts.forEach(id=>{
         const pct = Number(w.split_data[id])||0;
         const seg = box.querySelector('.ratio-seg[data-seg="'+id+'"]');
@@ -1479,7 +1495,7 @@
         const pctEl = box.querySelector('[data-pct="'+id+'"]');
         if(pctEl) pctEl.textContent = Math.round(pct)+'%';
         const amtEl = box.querySelector('[data-amt="'+id+'"]');
-        if(amtEl) amtEl.textContent = fmt(amt*pct/100)+' '+w.currency;
+        if(amtEl) amtEl.textContent = fmt(amounts[id])+' '+w.currency;
       });
       let cum = 0;
       for(let i=0;i<parts.length-1;i++){
@@ -1770,10 +1786,10 @@
             '<div class="payer-line">💰 '+escapeHtml(memberName(e.payer))+' <span class="payer-badge">付款人</span></div>'+
             Object.keys(shares).map(id=>{
               if(id === e.payer){
-                return '<div class="share-row"><span class="sname">'+escapeHtml(memberName(id))+'（自己的份）</span><span class="samt">'+fmt(shares[id])+'</span></div>';
+                return '<div class="share-row"><span class="sname">'+escapeHtml(memberName(id))+'（自己的份）</span><span class="samt">'+fmt(shares[id])+' '+e.currency+'</span></div>';
               }
               const isPaid = !!paid[id];
-              return '<div class="share-row"><span class="sname">'+escapeHtml(memberName(id))+'</span><span class="samt">'+fmt(shares[id])+'</span>'+
+              return '<div class="share-row"><span class="sname">'+escapeHtml(memberName(id))+'</span><span class="samt">'+fmt(shares[id])+' '+e.currency+'</span>'+
                 '<button class="paid-toggle js-toggle-paid '+(isPaid?'is-paid':'')+'" data-expense-id="'+e.id+'" data-member-id="'+id+'">'+(isPaid?'✓ 已還款':'標記已還')+'</button></div>';
             }).join('')+
             '<div class="expense-actions">'+
@@ -1795,13 +1811,31 @@
     if(e.split_type === 'equal' || !e.split_type){
       const each = e.participants.length ? amount/e.participants.length : 0;
       e.participants.forEach(id=> shares[id] = each);
+      return roundShares(shares, amount);
     } else if(e.split_type === 'ratio'){
       const total = e.participants.reduce((s,id)=> s + (Number(e.split_data[id])||0), 0);
       e.participants.forEach(id=> shares[id] = total>0 ? amount*(Number(e.split_data[id])||0)/total : 0);
+      return roundShares(shares, amount);
     } else if(e.split_type === 'custom'){
       e.participants.forEach(id=> shares[id] = Number(e.split_data[id])||0);
     }
     return shares;
+  }
+
+  // 用「最大餘數法」把浮動小數的分帳金額轉成整數，同時保證加總完全等於總金額
+  function roundShares(raw, total){
+    const ids = Object.keys(raw);
+    if(ids.length === 0) return {};
+    const targetTotal = Math.round(total);
+    const floors = {};
+    let flooredSum = 0;
+    ids.forEach(id=>{ const f = Math.floor(raw[id]); floors[id] = f; flooredSum += f; });
+    let remainder = targetTotal - flooredSum;
+    const byFrac = ids.map(id=>({ id, frac: raw[id]-Math.floor(raw[id]) })).sort((a,b)=>b.frac-a.frac);
+    const result = Object.assign({}, floors);
+    for(let i=0; i<byFrac.length && remainder>0; i++){ result[byFrac[i].id] += 1; remainder--; }
+    for(let i=byFrac.length-1; i>=0 && remainder<0; i--){ result[byFrac[i].id] -= 1; remainder++; }
+    return result;
   }
 
   function computeBalancesByCurrency(){
@@ -1834,9 +1868,11 @@
     const totalsByCurrency = {};
     data.expenses.forEach(e=>{ totalsByCurrency[e.currency] = (totalsByCurrency[e.currency]||0) + (Number(e.amount)||0); });
     const currencies = Object.keys(totalsByCurrency).sort((a,b)=>totalsByCurrency[b]-totalsByCurrency[a]);
-    const totalStr = currencies.length ? currencies.map(c=>fmt(totalsByCurrency[c])+' '+c).join('　') : '0';
+    const totalHTML = currencies.length
+      ? currencies.map(c=>'<div class="sval-line">'+fmt(totalsByCurrency[c])+' '+c+'</div>').join('')
+      : '<div class="sval-line">0</div>';
     return '<div class="summary-grid">'+
-      '<div class="summary-cell"><div class="slabel">總支出</div><div class="sval">'+totalStr+'</div></div>'+
+      '<div class="summary-cell"><div class="slabel">總支出</div>'+totalHTML+'</div>'+
       '<div class="summary-cell"><div class="slabel">支出筆數</div><div class="sval">'+data.expenses.length+' 筆</div></div>'+
     '</div>';
   }
@@ -1889,15 +1925,15 @@
         html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'+
           '<div class="savatar" style="background:'+color+'22;color:'+color+';">'+initials(memberName(id))+'</div>'+
           '<div style="font-weight:800;font-size:14.5px;flex:1;">'+escapeHtml(memberName(id))+'</div>'+
-          '<div class="mono" style="font-weight:800;font-size:13.5px;">已代墊 '+fmt(p.advanced)+'</div></div>';
+          '<div class="mono" style="font-weight:800;font-size:13.5px;">已代墊 '+fmt(p.advanced)+' '+cur+'</div></div>';
         html += '<div class="advance-bar">'+
           (p.collected>0.005 ? '<div class="advance-seg collected" style="width:'+collectedPct+'%;"></div>' : '')+
           (p.outstanding>0.005 ? '<div class="advance-seg outstanding" style="width:'+outstandingPct+'%;"></div>' : '')+
           (owedTotal<=0.005 ? '<div class="advance-seg empty" style="width:100%;"></div>' : '')+
         '</div>';
         html += '<div class="advance-legend">'+
-          '<span><span class="dot collected"></span>已收回 '+fmt(p.collected)+'</span>'+
-          '<span><span class="dot outstanding"></span>待回收 '+fmt(p.outstanding)+'</span>'+
+          '<span><span class="dot collected"></span>已收回 '+fmt(p.collected)+' '+cur+'</span>'+
+          '<span><span class="dot outstanding"></span>待回收 '+fmt(p.outstanding)+' '+cur+'</span>'+
         '</div>';
         html += '</div>';
       });
@@ -1989,7 +2025,7 @@
       lines.push('總支出（'+cur+'）：'+fmt(total));
       Object.keys(balances).forEach(id=>{
         const v = balances[id];
-        lines.push(memberName(id)+'：'+(v>=0?'+':'−')+fmt(Math.abs(v)));
+        lines.push(memberName(id)+'：'+(v>=0?'+':'−')+fmt(Math.abs(v))+' '+cur);
       });
       const txns = simplifyDebts(balances);
       if(txns.length){
